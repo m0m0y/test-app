@@ -1,0 +1,33 @@
+export interface UserProps {
+    id: number;
+    username: string;
+    email: string;
+    fname: string;
+    lname: string;
+    mname?: string;
+    suffix?: string;
+    role: string;
+    type?:string;
+    sec_grp?: string;
+    mobile?: string;
+    tel?: string;
+    office_address: string;
+    position?: string;
+    age: number;
+    soe?: string;
+    org_name?: string;
+    org?: string;
+    date_designation: string;
+    philhealth: string;
+    is_active: number;
+    island: string;
+    region: string;
+    province: string;
+    munci: string;
+    brgy: string;
+    pydp: string;
+    device_token: string;
+    remember_token: string;
+    created_at: string;
+    updated_at: string;
+}

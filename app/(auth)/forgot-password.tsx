@@ -1,0 +1,341 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Modal, StyleSheet, Text, View, Image, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, colorsWithOpacity } from '@/constants/ColorScheme';
+
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+
+import { BottomSheetModal, BottomSheetView, } from '@gorhom/bottom-sheet';
+
+import CustomButton from '@/components/ui/Button';
+import IconButton from '@/components/ui/IconButton';
+import InputField from '@/components/ui/InputField';
+import TextLink from '@/components/ui/TextLink';
+import SuccessModal from "./success-modal";
+
+interface ModalProps {
+  visibility: boolean,
+  fogotClose: () => void,
+}
+
+export default function ForgotPassword({ visibility, fogotClose }: ModalProps) {
+  const router = useRouter();
+  const colorScheme = useColorScheme();
+  const [email, setEmail] = useState<string>();
+  const [errorMessage, setErrorMessage] = useState<string>();
+  const [errorStyle, setErrorStyle] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+  function handleChange(text: string) {
+    setEmail(text);
+    setErrorMessage(undefined);
+    setErrorStyle(false);
+  }  
+
+  const handleSubmit = () => {
+    let isValid = true;
+
+    if (!email) {
+      setErrorMessage("Input your email first");
+      setErrorStyle(true);
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setErrorMessage("Please enter a valid email address!");
+      setErrorStyle(true);
+      isValid = false;
+    }
+
+    if (isValid) {
+      setEmail('');
+      setSuccessModal(true);
+      // modalState();
+      // setErrorStyle(true);
+    }
+  }
+
+  function handlerSuccessClose() {
+    setSuccessModal(false);
+    fogotClose();
+  }
+
+  function hanlderChangePass() {
+    router.push('/change-password');
+    fogotClose();
+  }
+
+  useEffect(() => {
+    if (visibility && bottomSheetRef.current) {
+      bottomSheetRef.current.present();
+    } else if (!visibility && bottomSheetRef.current) {
+      bottomSheetRef.current.dismiss();
+    }
+  }, [visibility]);
+
+  return (
+    <>
+      {/* <Modal
+        animationType='slide'
+        transparent={true}
+        visible={visibility}
+        onRequestClose={fogotClose} // Required on nav back button 
+      > */}
+
+      <BottomSheetModal
+        ref={bottomSheetRef}
+        snapPoints={['90%']}
+        backgroundStyle={{ backgroundColor: colorScheme === 'dark' ? Colors.dark.background : Colors.light.background, }}
+        onDismiss={fogotClose}
+        backdropComponent={({ style }) => (
+            <View style={[style, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]} />
+        )}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}> 
+
+          <BottomSheetView style={{ flex: 1 }}>
+
+            <ThemedView style={styles.modalContainer}>
+              <Image source={require('../../assets/images/nyc-logo.png')} style={styles.imageLogo} />
+
+              <View style={styles.textContainer}>
+                <ThemedText type='title' style={{ lineHeight: 50, }}>
+                  Forgot Password👋
+                </ThemedText>
+                <ThemedText style={styles.modalText}>
+                  Enter your email and we'll reset your password
+                </ThemedText>
+              </View>
+
+              <InputField
+                textLabel='Email Address'
+                inputConfig={{
+                  keyboardType: 'email-address',
+                  value: email,
+                  onChangeText: (text) => handleChange(text),
+                  autoCapitalize: 'none',
+                  placeholder: 'Enter your email',
+                  style: [
+                    styles.textInput,
+                    errorStyle && { borderColor: colors.danger }
+                  ]
+                }}
+                errorMesage={errorMessage}
+              />
+
+              <View style={styles.textContainer}>
+                <ThemedText style={[ styles.modalText, { textAlign: 'center', marginVertical: 5, lineHeight: 18 } ]}>
+                  For a quick and easier solution, simply change your password.
+                  {" "}
+                  <TextLink
+                    text='Change Password'
+                    textStyle={styles.textHighlight}
+                    onPress={hanlderChangePass}
+                    style={{ marginTop: 20 }}
+                  />
+                </ThemedText>
+              </View>
+              
+            </ThemedView>
+            
+            <ThemedView style={styles.buttonContainer}>
+              <CustomButton
+                title='Send Password'
+                type='primary'
+                onPress={handleSubmit}
+                buttonStyle={styles.button}
+                textStyle={styles.buttonText}
+              />
+            </ThemedView> 
+
+          </BottomSheetView>
+
+        </TouchableWithoutFeedback>
+      </BottomSheetModal>
+
+          {/* <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            // style={{ flex: 1 }}
+          > */}
+            {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}> */}
+              {/* <ThemedView style={styles.modalContainer}> */}
+                {/* <View style={styles.modalContent}> */}
+                  {/* <IconButton
+                    iconName='arrow-back'
+                    iconSize={25}
+                    onPress={fogotClose}
+                    iconButtonStyle={{ marginBottom: 10, width: 35, height: 33 }}
+                  /> */}
+
+                  {/* <ScrollView contentContainerStyle={styles.scrollViewContainer}> */}
+                    {/* <Image source={require('../../assets/images/nyc-logo.png')} style={styles.imageLogo} />
+
+                    <View style={styles.textContainer}>
+                      <ThemedText type='title' style={{ lineHeight: 50, }}>
+                        Forgot Password👋
+                      </ThemedText>
+                      <ThemedText style={styles.modalText}>
+                        Enter your email and we'll reset your password
+                      </ThemedText>
+                    </View>
+
+                    <InputField
+                      textLabel='Email Address'
+                      inputLabel='Enter your email'
+                      textInputStyle={[
+                        styles.textInput,
+                        errorStyle && { borderColor: colors.danger }
+                      ]}
+                      inputConfig={{
+                        keyboardType: 'email-address',
+                        autoFocus: true,
+                        value: email,
+                        onChangeText: handleChange,
+                        autoCapitalize: 'none',
+                      }}
+                      errorMesage={errorMessage}
+                    />
+
+                    <View style={styles.textContainer}>
+                      <ThemedText style={[ styles.modalText, { textAlign: 'center', marginVertical: 5, lineHeight: 18 } ]}>
+                        For a quick and easier solution, simply change your password.
+                        {" "}
+                        <TextLink
+                          text='Change Password'
+                          textStyle={styles.textHighlight}
+                          onPress={hanlderChangePass}
+                          style={{ marginTop: 20 }}
+                        />
+                      </ThemedText>
+                    </View> */}
+                  {/* </ScrollView> */}
+                {/* </View> */}
+              {/* </ThemedView> */}
+            {/* </TouchableWithoutFeedback> */}
+
+            {/* <ThemedView style={styles.buttonContainer}>
+              <CustomButton
+                title='Send Password'
+                type='primary'
+                onPress={handleSubmit}
+                buttonStyle={styles.button}
+                textStyle={styles.buttonText}
+              />
+            </ThemedView> */}
+          {/* </KeyboardAvoidingView> */}
+
+      
+      {/* </Modal> */}
+
+      {successModal && (
+        <SuccessModal
+          visibility={successModal}
+          successOnClose={handlerSuccessClose}
+          content= {
+            <>
+              <Ionicons name="mail-open" size={80} color={colors.primary} />
+              <ThemedText type='title' style={{ lineHeight: 40, }}>Password has been sent to your email. 🔑</ThemedText>
+              <ThemedText type='description'>Kindly check your inbox and make sure you entered the correct email.</ThemedText> 
+            </>
+          }
+          buttonTitle='Login Account'
+        />
+      )}
+    </>
+  )
+}
+
+const styles = StyleSheet.create({
+  // scrollViewContainer: {
+  //   flexGrow: 1,
+  // },
+
+  modalContainer: {
+    // backgroundColor: 'white',
+    flex: 1,
+    width: '100%',
+    // height: '100%',
+    // borderTopEndRadius: 10,
+    // borderTopStartRadius: 10,
+    // marginTop: 50,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 0,
+    // borderWidth: 2,
+
+    // Embossed effect
+    // shadowColor: '#000',
+    // shadowOffset: { width: 4, height: 4 }, // Offset to bottom-right for depth
+    // shadowOpacity: 0.5, // Soft shadow
+    // shadowRadius: 15,
+    // elevation: 10, // For Android
+  },
+  // modalContent: {
+  //   flex: 1,
+  // },
+
+  imageLogo: {
+    width: 254,
+    height: 88.28,
+    marginHorizontal: '-3%',
+    marginVertical: 8,
+  },
+
+  textContainer: {
+    marginVertical: 8,
+  },
+  // modalTitle: {
+  //   fontSize: 28,
+  //   height: 40,
+  //   fontFamily: 'popins-bold',
+  // },
+  modalText: {
+    fontSize: 14,
+    fontFamily: 'popins-regular',
+  },
+  textInput: {
+    borderRadius: 100,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontFamily: 'popins-regular',
+    fontSize: 14,
+  },
+  textHighlight: {
+    fontSize: 14,
+    textDecorationLine: 'underline',
+    fontFamily: 'popins-semibold',
+  },
+
+  buttonContainer: {
+    // borderWidth: 2,
+    padding: 20,
+    // backgroundColor: 'white',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'lightgray',
+  },
+  button: {
+    borderRadius: 100,
+    padding: 10,
+    borderWidth: 1,
+  },
+  buttonText: {
+    height: 24,
+    fontFamily: 'popins-regular',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+
+
+  // textTitle: {
+  //   width: '100%',
+  // },
+  // textDesc: {
+  //   fontFamily: 'popins-medium',
+  //   fontSize: 16,
+  // },
+});

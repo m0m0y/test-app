@@ -1,0 +1,98 @@
+export const ButtonColors = {
+    primary: { 
+        background: "#0d6efd", 
+        text: "#ffffff", 
+        border: "#0d6efd", 
+        borderWidth: 1, 
+    },
+    secondary: { 
+        background: "#6c757d", 
+        text: "#ffffff", 
+        border: "#6c757d", 
+        borderWidth: 1, 
+    },
+    success: { 
+        background: "#198754", 
+        text: "#ffffff",
+        border: "#198754", 
+        borderWidth: 1, 
+    },
+    danger: { 
+        background: "#dc3545", 
+        text: "#ffffff", 
+        border: "#dc3545", 
+        borderWidth: 1, 
+    },
+    warning: { 
+        background: "#ffc107", 
+        text: "#000000", 
+        border: "#ffc107", 
+        borderWidth: 1, 
+    },
+    info: { 
+        background: "#0dcaf0", 
+        text: "#000000", 
+        border: "#0dcaf0", 
+        borderWidth: 1, 
+    },
+    light: { 
+        background: "#f8f9fa", 
+        text: "#000000", 
+        border: "#f8f9fa", 
+        borderWidth: 1, 
+    },
+    dark: { 
+        background: "#212529", 
+        text: "#ffffff", 
+        border: "#212529", 
+        borderWidth: 1, 
+    },
+    outlinePrimary: { 
+        background: "transparent", 
+        text: "#0d6efd", 
+        border: "#0d6efd", 
+        borderWidth: 1, 
+    },
+    outlineSecondary: { 
+        background: "transparent", 
+        text: "#6c757d", 
+        border: "#6c757d", 
+        borderWidth: 1, 
+    },
+    outlineSuccess: { 
+        background: "transparent", 
+        text: "#198754", 
+        border: "#198754", 
+        borderWidth: 1, 
+    },
+    outlineDanger: { 
+        background: "transparent", 
+        text: "#dc3545", 
+        border: "#dc3545", 
+        borderWidth: 1, 
+    },
+    outlineWarning: { 
+        background: "transparent", 
+        text: "#ffc107", 
+        border: "#ffc107", 
+        borderWidth: 1, 
+    },
+    outlineInfo: { 
+        background: "transparent", 
+        text: "#0dcaf0", 
+        border: "#0dcaf0", 
+        borderWidth: 1, 
+    },
+    outlineLight: { 
+        background: "transparent", 
+        text: "#f8f9fa", 
+        border: "#f8f9fa", 
+        borderWidth: 1, 
+    },
+    outlineDark: { 
+        background: "transparent", 
+        text: "#212529", 
+        border: "#212529", 
+        borderWidth: 1, 
+    },
+};
