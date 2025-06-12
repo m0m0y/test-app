@@ -3,6 +3,11 @@ import { StyleSheet, Text, View, FlatList, TouchableWithoutFeedback, Keyboard, K
 import { colors, colorsWithOpacity } from '@/constants/ColorScheme';
 import { useLocationStore } from "@/store/useLocationStore";
 
+// import { GestureHandlerRootView } from 'react-native-gesture-handler';
+// import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+// import { ThemedInput } from "@/components/ThemedInput";
+// import { ButtonColors } from '@/constants/ButtonColors';
+// import { RegistrationProps } from "@/models/registration";
 
 import { useFocusEffect } from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
@@ -22,6 +27,7 @@ interface DateFormDataProps {
 }
 
 export default function Registration() {
+    // const [selected, setSelectedOption] = useState('');
     const [dropDownModal, setDropDownModal] = useState<
         'island' | 'region' | 'province' | 'municipality' | 'barangay' | undefined
     >(undefined); // centralize state for modal visibility
@@ -53,6 +59,60 @@ export default function Registration() {
         }, [])
     );
 
+    // const formFields = [
+    //     {
+    //         key: 'island',
+    //         label: 'Island',
+    //         data: islands,
+    //         setSelectedLocation: setSelectedIsland,
+    //         selectedValue: selectedIsland,
+    //     },
+    //     {
+    //         key: 'region',
+    //         label: 'Region',
+    //         data: regions,
+    //         setSelectedLocation: setSelectedRegion,
+    //         selectedValue: selectedRegion,
+    //     },
+    //     {
+    //         key: 'province',
+    //         label: 'Province',
+    //         data: province,
+    //         setSelectedLocation: setSelectedProvince,
+    //         selectedValue: selectedProvince,
+    //     },
+    //     {
+    //         key: 'municipality',
+    //         label: 'Municipality',
+    //         data: municipality,
+    //         setSelectedLocation: setSelectedMunicipality,
+    //         selectedValue: selectedMunicipality,
+    //     },
+    //     {
+    //         key: 'barangay',
+    //         label: 'Barangay',
+    //         data: barangay,
+    //         setSelectedLocation: setSelectedBarangay,
+    //         selectedValue: selectedBarangay,
+    //     }
+    // ];
+
+    // const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+    // const months = [
+    //     { label: 'January', value: '1' },
+    //     { label: 'February', value: '2' },
+    //     { label: 'March', value: '3' },
+    //     { label: 'April', value: '4' },
+    //     { label: 'May', value: '5' },
+    //     { label: 'June', value: '6' },
+    //     { label: 'July', value: '7' },
+    //     { label: 'August', value: '8' },
+    //     { label: 'September', value: '9' },
+    //     { label: 'October', value: '10' },
+    //     { label: 'November', value: '11' },
+    //     { label: 'December', value: '12' },
+    // ];
+
     const [formData, setFormData] = useState({
         date: '',
         month: '',
@@ -62,6 +122,7 @@ export default function Registration() {
         password: '',
         confirmPass: '',
     });
+    // const [selectedDay, setSelectedDay] = useState('1');
 
     const handleChange = (name: string, value: string) => {
         setFormData({ ...formData, [name]: value });
@@ -96,7 +157,20 @@ export default function Registration() {
         } else {
             console.log('correct');
         }
+
+        // console.log(formData.year.length);
+
+        // console.log('Island:', selectedIsland);
+        // console.log('Region:', selectedRegion);
+        // console.log('Province:', selectedProvince);
+        // console.log('Municipality:', selectedMunicipality);
+        // console.log('Barangay:', selectedBarangay);
+        // console.log('Date', formData.date);
+        // console.log('Month', formData.month);
+        // console.log('Year', formData.year);
     }
+
+    // console.log('Selected date: ' + selectedDay);
 
     return (
         <KeyboardAvoidingView
@@ -380,6 +454,28 @@ const styles = StyleSheet.create({
         // borderWidth: 2,
         marginHorizontal: 24,
     },
+    // textLabel: { 
+    //     fontFamily: 'popins-semibold', 
+    //     fontSize: 17, 
+    // },
+    // textLabel: {
+    //     marginBottom: 4,
+    //     fontSize: 17, 
+    //     fontFamily: 'popins-semibold',
+    // },
+    // textInputWrapper: {
+    //     flexDirection: 'row', 
+    //     justifyContent: 'space-between', 
+    //     alignItems: 'center', 
+    // },
+    // textInputButton: { 
+    //     backgroundColor: ButtonColors.secondary.background, 
+    //     borderColor: ButtonColors.secondary.border, 
+    //     borderWidth: ButtonColors.secondary.borderWidth,
+    //     borderRadius: 100,
+    //     paddingVertical: 11,
+    //     width: 85,
+    // },
     textInput: {
         borderRadius: 100,
         borderWidth: 1,
