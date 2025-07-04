@@ -43,16 +43,12 @@ export default function Landing() {
                         title='Get Started'
                         type='primary'
                         onPress={handleGetStart} // Get start Button
-                        // buttonStyle={indexStyles.button}
-                        // textStyle={indexStyles.buttonText}
                     />
 
                     <CustomButton
                         title='Register'
                         type='outlineDark'
                         onPress={handleRegister} // Registration Button
-                        // buttonStyle={indexStyles.button}
-                        // textStyle={indexStyles.buttonText}
                     />
                 </View>
 

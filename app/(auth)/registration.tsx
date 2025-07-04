@@ -1,417 +1,230 @@
-import React, { useCallback, useState } from "react";
-import { StyleSheet, Text, View, FlatList, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, ScrollView, TextInput, Pressable } from 'react-native';
-import { colors, colorsWithOpacity } from '@/constants/ColorScheme';
-import { useLocationStore } from "@/store/useLocationStore";
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Keyboard, Animated, Easing, Text, useAnimatedValue, } from 'react-native';
+import { ColorsWithOpacity, CustomColors } from '@/constants/ColorScheme';
+import { useRegistrationStore } from '@/store/useRegistrationStore';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { headerTitle } from '@/components/data/registrationHeaderText';
 
-// import { GestureHandlerRootView } from 'react-native-gesture-handler';
-// import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-// import { ThemedInput } from "@/components/ThemedInput";
-// import { ButtonColors } from '@/constants/ButtonColors';
-// import { RegistrationProps } from "@/models/registration";
+import AccountDetails from '@/components/ui/AccountDetails';
+import AccountInformation from '@/components/ui/AccountInformation';
+import AccountPreview from '@/components/ui/AccountPreview';
+import CustomButton from '@/components/ui/Button';
+import { Ionicons } from '@expo/vector-icons';
 
-import { useFocusEffect } from "expo-router";
-import { ThemedText } from "@/components/ThemedText";
-import { Ionicons } from "@expo/vector-icons";
-import { PasswordRequired } from "@/constants/PasswordRequirements";
+export default function registration() {
+    const colorScheme = useColorScheme();
+    const { currentStep, nextStep, prevStep } = useRegistrationStore();
+    const totalSteps = 3;
+    const progressPercentage = (currentStep / totalSteps) * 100;
+    const [activeNumber, setActiveNumber] = useState(false);
 
-import CustomButton from "@/components/ui/Button";
-import InputField from "@/components/ui/InputField";
-import Dropdown from "@/components/ui/Dropdown";
-import InputGroup from "@/components/ui/InputGroup";
-import InputDateGroup from "@/components/ui/InputDateGroup";
+    const titleTextAnim = useRef(new Animated.Value(1)).current;
+    const progressAnim = useRef(new Animated.Value(0)).current;
+    const formAnim = useRef(new Animated.Value(0)).current;
+    const selectedTitle = headerTitle.find(step => step.id === currentStep);
 
-interface DateFormDataProps {
-    date: string;
-    month: string;
-    year: string;
-}
+    useEffect(() => {
+        // Create and start animations directly
+        const parallelAnimation  = Animated.parallel([
+            // Title text animation
+            Animated.sequence([
+                Animated.timing(titleTextAnim, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                // After fade out, fade in new text
+                Animated.timing(titleTextAnim, {
+                    toValue: 1,
+                    duration: 200,
+                    useNativeDriver: true,
+                })
+            ]),
 
-export default function Registration() {
-    // const [selected, setSelectedOption] = useState('');
-    const [dropDownModal, setDropDownModal] = useState<
-        'island' | 'region' | 'province' | 'municipality' | 'barangay' | undefined
-    >(undefined); // centralize state for modal visibility
-    const resetLocationData = useLocationStore((state) => state.resetLocationData);
+            // Progress animation
+            Animated.sequence([
+                Animated.timing(progressAnim, {
+                    toValue: progressPercentage,
+                    duration: 800, // 800ms animation
+                    easing: Easing.bezier(0.25, 0.1, 0.25, 1), // Smooth easing
+                    useNativeDriver: false, // width animation requires layout
+                })
+            ]),
 
-    const { 
-        islands, 
-        regions, 
-        province, 
-        municipality,
-        barangay,
+            // Form Animations
+            Animated.sequence([
+                Animated.timing(formAnim, {
+                    toValue: 0,
+                    duration: 0,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(formAnim, {
+                    toValue: 1,
+                    duration: 200,
+                    useNativeDriver: true,
+                })
+            ]),
+        ]);
 
-        selectedIsland, 
-        selectedRegion, 
-        selectedProvince,
-        selectedMunicipality,
-        selectedBarangay,
-        
-        setSelectedIsland, 
-        setSelectedRegion, 
-        setSelectedProvince,
-        setSelectedMunicipality,
-        setSelectedBarangay,
-    } = useLocationStore();
+        parallelAnimation.start();
 
-    useFocusEffect(
-        useCallback(() => {
-            resetLocationData();
-        }, [])
-    );
+        // Cleanup function
+        return () => {
+            parallelAnimation.stop();
+        };
 
-    // const formFields = [
-    //     {
-    //         key: 'island',
-    //         label: 'Island',
-    //         data: islands,
-    //         setSelectedLocation: setSelectedIsland,
-    //         selectedValue: selectedIsland,
-    //     },
-    //     {
-    //         key: 'region',
-    //         label: 'Region',
-    //         data: regions,
-    //         setSelectedLocation: setSelectedRegion,
-    //         selectedValue: selectedRegion,
-    //     },
-    //     {
-    //         key: 'province',
-    //         label: 'Province',
-    //         data: province,
-    //         setSelectedLocation: setSelectedProvince,
-    //         selectedValue: selectedProvince,
-    //     },
-    //     {
-    //         key: 'municipality',
-    //         label: 'Municipality',
-    //         data: municipality,
-    //         setSelectedLocation: setSelectedMunicipality,
-    //         selectedValue: selectedMunicipality,
-    //     },
-    //     {
-    //         key: 'barangay',
-    //         label: 'Barangay',
-    //         data: barangay,
-    //         setSelectedLocation: setSelectedBarangay,
-    //         selectedValue: selectedBarangay,
-    //     }
-    // ];
+    }, [currentStep, progressPercentage]);
 
-    // const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
-    // const months = [
-    //     { label: 'January', value: '1' },
-    //     { label: 'February', value: '2' },
-    //     { label: 'March', value: '3' },
-    //     { label: 'April', value: '4' },
-    //     { label: 'May', value: '5' },
-    //     { label: 'June', value: '6' },
-    //     { label: 'July', value: '7' },
-    //     { label: 'August', value: '8' },
-    //     { label: 'September', value: '9' },
-    //     { label: 'October', value: '10' },
-    //     { label: 'November', value: '11' },
-    //     { label: 'December', value: '12' },
-    // ];
-
-    const [formData, setFormData] = useState({
-        date: '',
-        month: '',
-        year: '',
-        email: '',
-        username: '',
-        password: '',
-        confirmPass: '',
+    // Progressbar width animation
+    const animatedWidth = progressAnim.interpolate({
+        inputRange: [0, 100],
+        outputRange: ['0%', '100%'],
+        extrapolate: 'clamp'
     });
-    // const [selectedDay, setSelectedDay] = useState('1');
 
-    const handleChange = (name: string, value: string) => {
-        setFormData({ ...formData, [name]: value });
+    const getStepStyle = (stepNumber: number) => {
+        if (stepNumber < currentStep) {
+            // Completed step - green with checkmark
+            return {
+                backgroundColor: CustomColors.success, // Green color
+                content: <Ionicons name='checkmark-done' size={24} />,
+                textColor: 'white'
+            };
+        } else if (stepNumber === currentStep) {
+            // Current active step - primary color with number
+            return {
+                backgroundColor: CustomColors.primary,
+                content: stepNumber.toString(),
+                textColor: 'white'
+            };
+        } else {
+            // Future step - gray with number
+            return {
+                backgroundColor: ColorsWithOpacity(CustomColors.secondary, 0.2),
+                content: stepNumber.toString(),
+                textColor: CustomColors.secondary,
+            };
+        }
     }
 
-    const [items, setItems] = useState(PasswordRequired);
+    const NumberCircle = ({ number }: any) => {
+        const stepStyle = getStepStyle(number);
 
-    const validationPassword = (text: string) => {
-        handleChange('password', text);
-
-        if (text === "") {
-            setItems((prevItems) =>
-                prevItems.map((item) => ({
-                ...item,
-                checked: false, // Check if the condition is met
-                }))
-            );
-            return;
-        }
-
-        setItems((prevItems) =>
-            prevItems.map((item) => ({
-                ...item,
-                checked: item.validate(text), // Check if the condition is met
-            }))
+        return (
+            <Animated.View 
+                style={[
+                    styles.numberWrapper,
+                    { backgroundColor: stepStyle.backgroundColor },
+                ]}
+            >
+                <ThemedText 
+                    type='defaultSemiBold'
+                    style={{ color: stepStyle.textColor }}
+                >
+                    {stepStyle.content}
+                </ThemedText>
+            </Animated.View>
         );
     }
-
-    const handlerNextButton = () => {
-        if (formData.year.length !== 4) {
-            console.log('invalid the year');
-        } else {
-            console.log('correct');
-        }
-
-        // console.log(formData.year.length);
-
-        // console.log('Island:', selectedIsland);
-        // console.log('Region:', selectedRegion);
-        // console.log('Province:', selectedProvince);
-        // console.log('Municipality:', selectedMunicipality);
-        // console.log('Barangay:', selectedBarangay);
-        // console.log('Date', formData.date);
-        // console.log('Month', formData.month);
-        // console.log('Year', formData.year);
-    }
-
-    // console.log('Selected date: ' + selectedDay);
-
+    
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0} // Adjust the offset
-            style={{ flex: 1, }}
-        >
-            {/* { Header Content } */}
-            <View style={styles.headerContainer}>
+        <ThemedView style={styles.container}>
+            {/* Header Content */}
+            <View 
+                style={[
+                    styles.headerContainer,
+                    { 
+                        backgroundColor: colorScheme === 'dark' ?
+                        '#303459' :
+                        ColorsWithOpacity(CustomColors.secondary, 0.04),
+                    }
+                ]}
+            >
                 <View style={styles.headerWrapper}>
-
                     <View style={styles.titleContainer}>
-                        <View style={styles.numberContainer}>
-                            <Text style={styles.stepNumber}>
-                                1
-                            </Text>
-                        </View>
 
-                        <View style={styles.textTitleWrapper}>
-                            <Text style={styles.textTitle}>
-                                Account Information
-                            </Text>
-                            <Text style={styles.subTextTitle}>
-                                Enter your Account Details
-                            </Text>
+                        {/* Number of step in right */}
+                        <View style={styles.numberContainer}>
+                            {Array.from({ length: currentStep }, (_, i) => (
+                                <NumberCircle key={`completed-${i + 1}`} number={i + 1} />
+                            ))}
                         </View>
+                       
+                        <Animated.View 
+                            style={[
+                                styles.textTitleWrapper,
+                                { opacity: titleTextAnim }
+                            ]}
+                        >
+                            <ThemedText type='defaultSemiBold'>
+                                {selectedTitle?.title}
+                            </ThemedText>
+                            <ThemedText type='small'>
+                                {selectedTitle?.subtitle}
+                            </ThemedText>
+                        </Animated.View>
                     </View>
 
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'center', 
-                    }}>
-                        <View style={{
-                            backgroundColor: colorsWithOpacity(colors.secondary, 0.20), 
-                            width: 40, 
-                            height: 40,
-                            borderRadius: 25,
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            marginHorizontal: 15,
-                        }}>
-                            <Text style={{ 
-                                fontFamily: 'popins-semibold',
-                                fontSize: 16,
-                                lineHeight: 24,
-                            }}>
-                                2
-                            </Text>
-                        </View>
-
-                        <View style={{
-                            backgroundColor: colorsWithOpacity(colors.secondary, 0.20), 
-                            width: 40, 
-                            height: 40,
-                            borderRadius: 25,
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                        }}>
-                            <Text style={{ 
-                                fontFamily: 'popins-semibold',
-                                fontSize: 16,
-                                lineHeight: 24,
-                            }}>
-                                3
-                            </Text>
-                        </View>
+                    {/* Number of step in left */}
+                    <View style={styles.numberContainer}>
+                        {currentStep < 3 && 
+                            Array.from({ length: 3 - currentStep }, (_, i) => (
+                                <NumberCircle key={`remaining-${currentStep + i + 1}`} number={currentStep + i + 1} />
+                            ))
+                        }
                     </View>
                 </View>
             </View>
 
+            {/* Progress Bar */}
+            <ThemedText style={styles.progressBackground}>
+                <Animated.View  
+                    style={[
+                        styles.progressFill, 
+                        { width: animatedWidth },
+                    ]} 
+                />
+            </ThemedText>
 
-            {/* Form Content */}
-            <ScrollView 
-                keyboardShouldPersistTaps="handled"
-                // contentContainerStyle={{ flexGrow: 1 }}
+            {/* Registration Form */}
+            <KeyboardAvoidingView
+               behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+               keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0} // Adjust the offset 
+               style={{ flex: 1 }}
             >
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <View style={styles.registrationContainer}>
-                        <View style={styles.formContainer}>
-
-                            <Dropdown 
-                                textLabel='Island'
-                                data={islands}
-                                visibility={dropDownModal === 'island'}
-                                dropdownModalOpen={() => setDropDownModal('island')}
-                                dropdownModalClose={() => setDropDownModal(undefined)}
-                                setSelectedLocation={setSelectedIsland}
-                                selectedValue={selectedIsland}
-                            />
-
-                            <Dropdown 
-                                textLabel='Region'
-                                data={regions}
-                                visibility={dropDownModal === 'region'}
-                                dropdownModalOpen={() => setDropDownModal('region')}
-                                dropdownModalClose={() => setDropDownModal(undefined)}
-                                setSelectedLocation={setSelectedRegion}
-                                selectedValue={selectedRegion}
-                            />
-
-                            <Dropdown 
-                                textLabel='Province'
-                                data={province}
-                                visibility={dropDownModal === 'province'}
-                                dropdownModalOpen={() => setDropDownModal('province')}
-                                dropdownModalClose={() => setDropDownModal(undefined)}
-                                setSelectedLocation={setSelectedProvince}
-                                selectedValue={selectedProvince}
-                            />
-
-                            <Dropdown 
-                                textLabel='Municipality'
-                                data={municipality}
-                                visibility={dropDownModal === 'municipality'}
-                                dropdownModalOpen={() => setDropDownModal('municipality')}
-                                dropdownModalClose={() => setDropDownModal(undefined)}
-                                setSelectedLocation={setSelectedMunicipality}
-                                selectedValue={selectedMunicipality}
-                            />
-
-                            <Dropdown 
-                                textLabel='Barangay'
-                                data={barangay}
-                                visibility={dropDownModal === 'barangay'}
-                                dropdownModalOpen={() => setDropDownModal('barangay')}
-                                dropdownModalClose={() => setDropDownModal(undefined)}
-                                setSelectedLocation={setSelectedBarangay}
-                                selectedValue={selectedBarangay}
-                            />
-
-                            <InputDateGroup 
-                                textLabel='Date of birth'
-                                dateValue={formData.date}
-                                monthValue={formData.month}
-                                yearValue={formData.year}
-                                onChangeText={(field: keyof DateFormDataProps, value: string) => handleChange(field, value)}
-                            />
-
-                            <InputGroup 
-                                textLabel='Email'
-                                buttonLabel='Verify'
-                                inputConfig={{
-                                    keyboardType: 'email-address',
-                                    value: formData.email,
-                                    onChangeText: (text) => handleChange('email', text),
-                                    placeholder: 'Enter Email',
-                                }}
-                            />
-
-                            <InputGroup 
-                                textLabel='Username'
-                                buttonLabel='Check'
-                                inputConfig={{
-                                    keyboardType: 'default',
-                                    value: formData.username,
-                                    onChangeText: (text) => handleChange('email', text),
-                                    placeholder: 'Type your username',
-                                }}
-                            />
-
-                            <InputField 
-                                textLabel='Password'
-                                inputConfig={{
-                                    keyboardType: 'default',
-                                    secureTextEntry: true,
-                                    value: formData.password,
-                                    onChangeText: validationPassword,
-                                    autoCapitalize: 'none',
-                                    placeholder: 'Enter Password',
-                                    style: [
-                                        styles.textInput,
-                                    ]
-                                }}
-                            />
-
-                            <View style={styles.textWarningContainer}>
-                                <ThemedText style={styles.textWarning}>
-                                    Your password must contain:
-                                </ThemedText>
-
-                                {items.map((item) => (
-                                    <View key={item.id} style={styles.checkListContainer}>
-                                    <Ionicons
-                                        name='checkmark-circle'
-                                        size={20} 
-                                        color={item.checked ? colors.success : colors.secondary}
-                                    />
-                                    <ThemedText style={styles.checkList}>
-                                        {item.text}
-                                    </ThemedText>
-                                    </View>
-                                ))}
-
-                            </View>
-
-                            <InputField 
-                                textLabel='Confirm Password'
-                                inputConfig={{
-                                    keyboardType: 'default',
-                                    secureTextEntry: true,
-                                    value: formData.confirmPass,
-                                    onChangeText: (text) => handleChange('confirmPass', text),
-                                    autoCapitalize: 'none',
-                                    placeholder: 'Confirm Password',
-                                    style: [
-                                        styles.textInput,
-                                    ]
-                                }}
-                            />
-                        </View>
-
-                        <View style={styles.buttonContainer}>
-                            <CustomButton 
-                                title='Next'
-                                onPress={handlerNextButton}
-                                type='primary'
-                            />
-                        </View>
-                    </View>
-                </TouchableWithoutFeedback>
-            </ScrollView>
-        </KeyboardAvoidingView>
+                <ScrollView keyboardShouldPersistTaps="handled">
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                        <Animated.View style={{ opacity: formAnim }}>
+                            {currentStep === 1 &&  <AccountDetails />}
+                            {currentStep === 2 &&  <AccountInformation />}
+                            {currentStep === 3 &&  <AccountPreview />}
+                        </Animated.View>
+                    </TouchableWithoutFeedback>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </ThemedView>
     )
 }
 
 const styles = StyleSheet.create({
-    registrationContainer: { 
-        flex: 1, 
-        backgroundColor: colors.white 
+    container: {
+        flex: 1,
     },
-    headerWrapper: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between' 
-    },
-
     headerContainer: { 
-        backgroundColor: '#F8F8F8', 
         paddingHorizontal: 15, 
         paddingVertical: 18, 
+        // backgroundColor: '#F8F8F8', 
         // marginBottom: 10,
-        // borderWidth: 2,
+        // borderBottomWidth: 5,
+        // borderBottomColor: CustomColors.primary,
+        // borderStartWidth: 50,
+    },
+
+    headerWrapper: { 
+        flexDirection: 'row', 
+        justifyContent: 'space-between',
     },
 
     titleContainer: { 
@@ -421,91 +234,30 @@ const styles = StyleSheet.create({
     },
 
     numberContainer: {
-        backgroundColor: '#203871', 
+        flexDirection: 'row',
+        alignItems: 'center', 
+        gap: 5, 
+    },
+    numberWrapper: {
+        // backgroundColor: ColorsWithOpacity(CustomColors.secondary, 0.20), 
         width: 40, 
         height: 40,
         borderRadius: 25,
         alignItems: 'center', 
         justifyContent: 'center',
     },
-    stepNumber: {
-        fontFamily: 'popins-semibold',
-        fontSize: 16,
-        color: colors.white,
-    },
     
     textTitleWrapper: { 
         flexDirection: 'column', 
         marginHorizontal: 10, 
     },
-    textTitle: { 
-        fontFamily: 'popins-bold', 
-        fontSize: 18,
-        lineHeight: 21,
+    
+    progressBackground: {
+        height: 6,
     },
-    subTextTitle: { 
-        fontFamily: 'popins-regular', 
-        fontSize: 13, 
-        lineHeight: 15,
+    progressFill: {
+        height: '100%',
+        backgroundColor: CustomColors.primary,
+        minWidth: 6, // Minimum width para makita kahit step 1
     },
-
-
-    formContainer: {
-        // borderWidth: 2,
-        marginHorizontal: 24,
-    },
-    // textLabel: { 
-    //     fontFamily: 'popins-semibold', 
-    //     fontSize: 17, 
-    // },
-    // textLabel: {
-    //     marginBottom: 4,
-    //     fontSize: 17, 
-    //     fontFamily: 'popins-semibold',
-    // },
-    // textInputWrapper: {
-    //     flexDirection: 'row', 
-    //     justifyContent: 'space-between', 
-    //     alignItems: 'center', 
-    // },
-    // textInputButton: { 
-    //     backgroundColor: ButtonColors.secondary.background, 
-    //     borderColor: ButtonColors.secondary.border, 
-    //     borderWidth: ButtonColors.secondary.borderWidth,
-    //     borderRadius: 100,
-    //     paddingVertical: 11,
-    //     width: 85,
-    // },
-    textInput: {
-        borderRadius: 100,
-        borderWidth: 1,
-        paddingHorizontal: 14,
-        paddingVertical: 10,
-        fontFamily: 'popins-regular',
-        fontSize: 14,
-    },
-
-
-    textWarningContainer: {
-        marginVertical: 3, 
-    },
-    textWarning: {
-        fontFamily: 'popins-bold',
-        fontSize: 14,
-        marginBottom: 5,
-    },
-    checkListContainer: {
-        flexDirection: 'row', 
-        alignItems: 'center',
-    },
-    checkList: {
-        marginLeft: 8, 
-        fontSize: 13, 
-        fontFamily: 'popins-regular',
-    },
-
-    buttonContainer: {
-        marginVertical: 15,
-        marginHorizontal: 24,
-    }
 });

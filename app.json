@@ -4,7 +4,7 @@
     "slug": "testApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/sk-icon.png",
+    "icon": "./assets/images/sk-app-icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/nyc-logo.png",
+        "foregroundImage": "./assets/images/sk-app-icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "lms.test"
@@ -28,12 +28,19 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/nyc-logo.png",
+          "image": "./assets/images/new-nyc-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true

@@ -13,9 +13,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
-
 import { useAuthStore } from '@/store/useAuthStore';
-// import { colors } from '@/constants/ColorScheme';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

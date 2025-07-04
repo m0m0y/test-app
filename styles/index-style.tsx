@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '@/constants/ColorScheme';
+import { CustomColors } from '@/constants/ColorScheme';
 
 const indexStyles = StyleSheet.create({
   container: {
@@ -71,7 +71,7 @@ const indexStyles = StyleSheet.create({
     fontSize: 16,
   },
   textHighlight: {
-    color: colors.primary, 
+    color: CustomColors.primary, 
     fontFamily: 'popins-bold',
     textDecorationLine: 'underline',
   },

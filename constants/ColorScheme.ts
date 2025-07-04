@@ -1,4 +1,4 @@
-export const colors = {
+export const CustomColors = {
     primary: '#0d6efd',
     secondary: '#6c757d',
     success: '#198754',
@@ -11,7 +11,7 @@ export const colors = {
     black: '#000',
 }
 
-export const colorsWithOpacity = (hexCode: string, opacity: number) => {
+export const ColorsWithOpacity = (hexCode: string, opacity: number) => {
     const hex = hexCode.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
