@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Modal, StatusBar, Pressable, ViewStyle, TextStyle } from 'react-native';
 import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
+import { ThemedView } from "@/components/ThemedView";
+import { ButtonColors } from '@/constants/ButtonColors';
 
 import CustomButton from '@/components/ui/Button';
+type ButtonType = keyof typeof ButtonColors; // Define available button types
 
 interface ButtonConfigProps {
     buttonTitle: string,
-    buttonType?: string,
+    buttonType?: ButtonType,
     buttonOnpress: () => void,
     buttonStyle?: ViewStyle,
     buttonTextStyle?: TextStyle,
@@ -49,7 +52,11 @@ export default function AlertModal(props: MessageModalProps) {
             <View style={styles.overlay}>
                 <View style={styles.alertModalContainer}>
                     <View style={styles.textContainer}>
-                        {props.content ? ( <View style={{}}>{props.content}</View> ) : null }
+                        {/* {props.content ? 
+                            <>{props.content}</> : 
+                            null 
+                        } */}
+                        {props.content}
                     </View>
 
                     {props.buttons.length > 0 && (
@@ -58,14 +65,17 @@ export default function AlertModal(props: MessageModalProps) {
                                 <CustomButton
                                     key={index}
                                     title={button.buttonTitle}
-                                    type={button.buttonType ? 'outlineDark' : 'primary'}
+                                    type={button.buttonType}
                                     onPress={button.buttonOnpress}
                                     buttonStyle={styles.button}
-                                    textStyle={[styles.buttonText, button.buttonTextStyle]}
+                                    textStyle={[
+                                        styles.buttonText, 
+                                        button.buttonTextStyle
+                                    ]}
                                 />
                             ))}
                         </View>
-                    )}                    
+                    )}
                 </View>
             </View>
         </Modal>
@@ -81,7 +91,7 @@ const styles = StyleSheet.create({
     },
     alertModalContainer: {
         backgroundColor: CustomColors.white,
-        width: '75%',
+        width: '85%',
         borderRadius: 5,
         shadowColor: CustomColors.black,
         shadowOpacity: 10,
@@ -90,7 +100,7 @@ const styles = StyleSheet.create({
     },
 
     textContainer: {
-        backgroundColor: CustomColors.white, 
+        // backgroundColor: CustomColors.white, 
         padding: 24, 
         borderRadius: 10,
     },
@@ -101,14 +111,15 @@ const styles = StyleSheet.create({
         backgroundColor: ColorsWithOpacity(CustomColors.secondary, 0.1),
         borderTopWidth: StyleSheet.hairlineWidth, 
         borderTopColor: 'lightgray',
-        height: 50,
+        paddingTop: 13,
+        gap: 5,
     },
     button: {
-        paddingTop: 10,
+        // paddingTop: 10,
         paddingHorizontal: 20, 
-        marginVertical: 4, 
+        // marginVertical: 4, 
         width: '100%',
-        height: 40,
+        // height: 40,
     },
     buttonText: {
         alignItems: 'center',

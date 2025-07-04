@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
 import { useRouter } from 'expo-router';
 import { useAuthStore } from "@/store/useAuthStore";
-
+import { useHeaderHeight } from '@react-navigation/elements';
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 
@@ -35,16 +35,29 @@ type FocusedProps = {
 }
 
 export default function SigninScreen() {
-  const [forgotModal, setForgotModal] = useState(false);
   const router = useRouter();
+  const headerHeight = useHeaderHeight();
+  const onLogin = useAuthStore((state) => state.onLogin);
+
   const screenHeight = Dimensions.get('window').height;
+  const keyboardOffset = Platform.OS === 'ios' ? headerHeight : 0;
   const backGroundImg = require('../../assets/images/dark-auth-bg.png');
   const logo = require('../../assets/images/nyc-logo.png');
+  
+  const [forgotModal, setForgotModal] = useState(false);
+  const [alertModal, setAlertModal] = useState<ModalProps>({ 
+    alertShow: false, 
+    alertMessage: '' 
+  });
 
-  const onLogin = useAuthStore((state) => state.onLogin);
-  const [alertModal, setAlertModal] = useState<ModalProps>({ alertShow: false, alertMessage: '' });
-  const [formData, setFormData] = useState<FormFieldsProps>({} as FormFieldsProps); // assertion to tell typescript that we know we're doing and that empty object will eventually be replaced by a valid FormFieldsProps.
-  const [isFocused, setIsFocused] = useState<FocusedProps>({} as FocusedProps); // assertion to tell typescript that we know we're doing and that empty object will eventually be replaced by a valid FocusedProps.
+  const [formData, setFormData] = useState<FormFieldsProps>({
+    email: '',
+    password: '',
+  }); 
+  const [isFocused, setIsFocused] = useState<FocusedProps>({
+    email: false,
+    password: false,
+  });
   
   // For testing 
   // const { onLogin, isLoading } = useAuthStore();
@@ -154,11 +167,11 @@ export default function SigninScreen() {
     <>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0} // Adjust the offset
+        keyboardVerticalOffset={keyboardOffset} // Adjust the offset
         style={{ flex: 1, }}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <ThemedView style={styles.container}>
+          <ThemedView style={styles.contentContainer}>
 
             {/* Image Contianer */}
             <View style={[
@@ -176,8 +189,8 @@ export default function SigninScreen() {
               </ImageBackground>
             </View>
 
-            {/* Content Container */}
-            <ThemedView style={styles.contentContainer}>
+            {/* Form Container */}
+            <ThemedView style={styles.formWrapper}>
 
               <View style={styles.textContainer}>
                 <View style={styles.subTitle}>
@@ -294,13 +307,11 @@ export default function SigninScreen() {
               buttonTitle: 'Try Again', 
               buttonType: 'outlineDark', 
               buttonOnpress: alertCloseHandler, 
-              buttonTextStyle: { fontFamily: 'popins-regular', }
             },
             { 
               buttonTitle: 'Find my Account', 
-              buttonType: 'outlineDark', 
+              buttonType: 'primary', 
               buttonOnpress: findAccountHandler,
-              buttonTextStyle: { color: CustomColors.danger, fontFamily: 'popins-semibold' }
             }
           ]}
           handleRequestClose={alertCloseHandler}
@@ -311,7 +322,7 @@ export default function SigninScreen() {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  contentContainer: {
     flex: 1,
   },
 
@@ -331,7 +342,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
 
-  contentContainer: {
+  formWrapper: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
