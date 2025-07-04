@@ -76,18 +76,25 @@ export default function ForgotPassword({ visibility, fogotClose }: ModalProps) {
       <BottomSheetModal
         ref={bottomSheetRef}
         snapPoints={['90%']}
-        backgroundStyle={{ backgroundColor: colorScheme === 'dark' ? Colors.dark.background : Colors.light.background, }}
+        backgroundStyle={{ 
+          backgroundColor: colorScheme === 'dark' ? 
+          Colors.dark.background : 
+          Colors.light.background, 
+        }}
         onDismiss={fogotClose}
         backdropComponent={({ style }) => (
-            <View style={[style, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]} />
+          <View style={[
+            style, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }
+          ]} />
         )}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}> 
-
           <BottomSheetView style={{ flex: 1 }}>
-
             <ThemedView style={styles.modalContainer}>
-              <Image source={require('../../assets/images/nyc-logo.png')} style={styles.imageLogo} />
+              <Image 
+                source={require('../../assets/images/nyc-logo.png')} 
+                style={styles.imageLogo} 
+              />
 
               <View style={styles.textContainer}>
                 <ThemedText type='title' style={{ lineHeight: 50, }}>
@@ -140,7 +147,6 @@ export default function ForgotPassword({ visibility, fogotClose }: ModalProps) {
             </ThemedView> 
 
           </BottomSheetView>
-
         </TouchableWithoutFeedback>
       </BottomSheetModal>
 

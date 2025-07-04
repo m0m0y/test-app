@@ -1,10 +1,12 @@
 import React, { useState, useContext, useEffect } from "react";
+import { useHeaderHeight } from '@react-navigation/elements';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { PasswordRequired } from "@/constants/PasswordRequirements";
+
 // import { AuthContext } from "../contexts/AuthContext";
 
 import InputField from '@/components/ui/InputField';
@@ -17,6 +19,8 @@ import { FormFieldsProps } from "@/models/changepass";
 
 export default function ChangPassword() {
   // validation checklist
+  const headerHeight = useHeaderHeight();
+  const keyboardOffset = Platform.OS === 'ios' ? headerHeight : 0;
   const [items, setItems] = useState(PasswordRequired);
 
   // default values of input type use for clear field after submission
@@ -30,6 +34,15 @@ export default function ChangPassword() {
   const [errorMessage, setErrorMessage] = useState<FormFieldsProps>({});
   const [errorStyle, setErrorStyles] = useState<{ [key: string]: boolean }>({});
   const [successModal, setSuccessModal] = useState(false);
+
+  
+  useEffect(() => {
+    if(!formData.newPass) {
+      setItems((checkItems) => 
+        checkItems.map((item) => ({ ...item, checked: false }))
+      )
+    }
+  }, [formData.newPass])
 
   function handleChange(name: string, value: string) {
     setFormData({ ...formData, [name]: value });
@@ -108,21 +121,14 @@ export default function ChangPassword() {
     setSuccessModal(false);
   }
 
-  useEffect(() => {
-    if(!formData.newPass) {
-      setItems((checkItems) => 
-        checkItems.map((item) => ({ ...item, checked: false }))
-      )
-    }
-  }, [formData.newPass])
-
   // const val = useContext(AuthContext);
   // console.log(val);
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollViewContainer}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={keyboardOffset} // Adjust the offset
         style={{ flex: 1 }}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -251,16 +257,12 @@ const styles = StyleSheet.create({
 
   contentContainer: {
     flex: 1,
-    // backgroundColor: 'white',
-    width: '100%',
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 0,
   },
 
   formContainer: {
-    // borderWidth: 1,
-    marginBottom: 0,
+    // borderWidth: 2,
+    marginHorizontal: 22,
+    marginTop: 15,
   },
 
 
