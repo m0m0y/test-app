@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, colorsWithOpacity } from "@/constants/ColorScheme";
+import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { PasswordRequired } from "@/constants/PasswordRequirements";
@@ -140,7 +140,7 @@ export default function ChangPassword() {
                   placeholder: 'Enter your old password',
                   style: [
                     styles.textInput,
-                    errorStyle.oldPass && { borderColor: colors.danger }
+                    errorStyle.oldPass && { borderColor: CustomColors.danger }
                   ]
                 }}
                 errorMesage={errorMessage.oldPass}
@@ -157,7 +157,7 @@ export default function ChangPassword() {
                   placeholder: 'Your new password',
                   style: [
                     styles.textInput,
-                    errorStyle.oldPass && { borderColor: colors.danger }
+                    errorStyle.oldPass && { borderColor: CustomColors.danger }
                   ]
                 }}
                 errorMesage={errorMessage.newPass}
@@ -173,7 +173,7 @@ export default function ChangPassword() {
                     <Ionicons
                       name='checkmark-circle'
                       size={20} 
-                      color={item.checked ? colors.success : colors.secondary}
+                      color={item.checked ? CustomColors.success : CustomColors.secondary}
                     />
                     <ThemedText style={styles.checkList}>
                       {item.text}
@@ -194,7 +194,7 @@ export default function ChangPassword() {
                   placeholder: 'Please confirm your password',
                    style: [
                     styles.textInput,
-                    errorStyle.oldPass && { borderColor: colors.danger }
+                    errorStyle.oldPass && { borderColor: CustomColors.danger }
                   ]
                 }}
                 errorMesage={errorMessage.confirmPass}
@@ -224,7 +224,7 @@ export default function ChangPassword() {
               <Ionicons 
                 name="lock-closed" 
                 size={90} 
-                color={colorsWithOpacity(colors.secondary, 0.65)} 
+                color={ColorsWithOpacity(CustomColors.secondary, 0.65)} 
               />
 
               <ThemedText type='subtitle' style={{ lineHeight: 40, }}>

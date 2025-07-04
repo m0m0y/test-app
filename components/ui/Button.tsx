@@ -1,18 +1,19 @@
-import { View, Text, StyleSheet, Pressable, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, Pressable, StyleProp, TextStyle, ViewStyle, PressableProps } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { ButtonColors } from '@/constants/ButtonColors';
 
 type ButtonType = keyof typeof ButtonColors; // Define available button types
 
 interface ButtonProps {
-    title: string,
-    type?: ButtonType,
-    onPress: () => void,
-    buttonStyle?: StyleProp<ViewStyle>,
-    textStyle?: StyleProp<TextStyle>,
+    title: string;
+    type?: ButtonType;
+    onPress: () => void;
+    otherProps?: PressableProps;
+    buttonStyle?: StyleProp<ViewStyle>;
+    textStyle?: StyleProp<TextStyle>;
 }
 
-export default function CustomButton({ title, type = 'primary', onPress, buttonStyle, textStyle }: ButtonProps) {
+export default function CustomButton({ title, type = 'primary', onPress, otherProps, buttonStyle, textStyle }: ButtonProps) {
     const { background, text, border, borderWidth } = ButtonColors[type];
 
     return (
@@ -26,9 +27,12 @@ export default function CustomButton({ title, type = 'primary', onPress, buttonS
                         borderWidth: borderWidth,
                         borderRadius: 100,
                         padding: 10,
-                    }
+                    },
+                    buttonStyle,
                 ]}
-                onPress={onPress}>
+                onPress={onPress}
+                {...otherProps}
+            >
 
                 <ThemedText type='buttonText' style={[
                     { color: text }, // from ButtonColors

@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
 import { View, Text, Button, StyleSheet, Image, ScrollView, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
-import { useRouter, useRootNavigationState } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCourseState } from "@/store/useCourseStore";
-import { colors, colorsWithOpacity } from "@/constants/ColorScheme";
-// import { FlatList } from "react-native-reanimated/lib/typescript/Animated";
+import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
 
 export default function HomeScreen() {  
   const router = useRouter();
@@ -92,7 +91,7 @@ export default function HomeScreen() {
               <Text style={{ fontSize: 18, fontFamily: 'popins-bold', }}>My Course (4)</Text>
 
               <TouchableOpacity onPress={() => handleMoreCourse('test')}>
-                <Text style={{ fontSize: 14, fontFamily: 'popins-regular', color: colors.primary, }}>View more</Text>
+                <Text style={{ fontSize: 14, fontFamily: 'popins-regular', color: CustomColors.primary, }}>View more</Text>
               </TouchableOpacity>
             </View>
 
@@ -148,7 +147,7 @@ const styles = StyleSheet.create({
 
   welcomeCard: {
     justifyContent: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: CustomColors.white,
     padding: 17,
     marginVertical: 12,
     marginHorizontal: 24,

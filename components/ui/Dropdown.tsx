@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Modal, FlatList, StatusBar, Button } from 'react-native';
-import { colors, colorsWithOpacity } from '@/constants/ColorScheme';
+import { CustomColors, ColorsWithOpacity } from '@/constants/ColorScheme';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetFlatList, BottomSheetModal } from "@gorhom/bottom-sheet";
-
-// import { useLocationStore } from "@/store/useLocationStore";
-// import { BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-// import { useBottomSheetModal } from '@gorhom/bottom-sheet';
+import { ThemedText } from "../ThemedText";
 
 interface DropdownProps {
     textLabel: string;
@@ -15,12 +14,12 @@ interface DropdownProps {
     
     dropdownModalOpen: () => void;
     dropdownModalClose: () => void;
-    setSelectedLocation: (value: string) => void;
+    setSelectedValue: (value: string) => void;
     selectedValue?: string; 
 }
 
-export default function Dropdown({ textLabel, data, visibility, dropdownModalOpen, dropdownModalClose, setSelectedLocation, selectedValue }: DropdownProps) {
-
+export default function Dropdown({ textLabel, data, visibility, dropdownModalOpen, dropdownModalClose, setSelectedValue, selectedValue }: DropdownProps) {
+    const colorScheme = useColorScheme();
     const [selectedOption, setSelectedOption] = useState('');
     const bottomSheetRef = useRef<BottomSheetModal>(null);
     
@@ -40,103 +39,111 @@ export default function Dropdown({ textLabel, data, visibility, dropdownModalOpe
 
     const handleSelect = (item: { label: string, value: string }) => {
         setSelectedOption(item.label);
-        setSelectedLocation(item.value); // call setter (setSelectedIsland, setSelectedRegion, etc..)
+        setSelectedValue(item.value); // call setter (setSelectedIsland, setSelectedRegion, etc..)
         dropdownModalClose(); // close modal
         // StatusBar.setBackgroundColor('rgba(253, 254, 255, 0)', true);
     }
     
     return (
         <View style={{ marginBottom: 19, }}>
-            <Text style={styles.textLabel}>{ textLabel }</Text>
+            <ThemedText style={styles.textLabel}>
+                { textLabel }
+            </ThemedText>
 
             <TouchableOpacity 
-                style={styles.dropdownField}
-                // onPress={() => console.log(`${visibility}`)}
+                style={[
+                    styles.dropdownField, 
+                    { 
+                        borderColor: colorScheme === 'dark' ?
+                        Colors.dark.borderColor : 
+                        Colors.light.borderColor, 
+                    }
+                 ]}
                 onPress={dropdownModalOpen}
                 activeOpacity={1}
             >
                 <View style={styles.placeholderContainer}>
                     {selectedOption ? 
-                        <Text style={styles.placeholderText}>{selectedOption}</Text> : 
-                        <Text style={[
-                            styles.placeholderText, 
-                            { color: colors.secondary }
-                        ]}>{ textLabel }</Text> 
+                        <ThemedText type="small">
+                            {selectedOption}
+                        </ThemedText> : 
+                        <ThemedText type="small">
+                            { textLabel }
+                        </ThemedText> 
                     }
 
-                    <Ionicons name="chevron-down" size={24} color="black" />
+                    <Ionicons 
+                        name="chevron-down" 
+                        size={24} 
+                        color={
+                            colorScheme === 'dark' ?
+                            Colors.dark.text :
+                            Colors.light.text
+                        }
+                    />
                 </View>
-            
             </TouchableOpacity>
 
             <BottomSheetModal
                 ref={bottomSheetRef}
                 snapPoints={['40%', '90%',]}
                 enableDynamicSizing={false}
-                backgroundStyle={{ backgroundColor: 'white' }}
+                backgroundStyle={{ backgroundColor: colorScheme === 'dark' ? Colors.dark.background : Colors.light.background, }}
                 onDismiss={dropdownModalClose}
                 backdropComponent={({ style }) => (
                     <View style={[style, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]} />
                 )}
             >
-                
                 <View style={styles.modalContainer}>
-                    <Text style={styles.modalSubTitle}>Choose { textLabel }</Text>
+                    <ThemedText style={styles.modalSubTitle}>
+                        Choose { textLabel }
+                    </ThemedText>
 
                     <BottomSheetFlatList 
                         data={data}
                         keyExtractor={(item) => item.value}
-                        style={{ paddingHorizontal: 24, paddingBottom: 26, }}
+                        style={{ 
+                            paddingHorizontal: 20, 
+                            paddingTop: 13,
+                            paddingBottom: 25, 
+                        }}
                         ListEmptyComponent={() => (
-                            <Text style={{ marginTop: 25, fontSize: 17, textAlign: 'center', fontFamily: 'popins-regular' }}>
+                            <ThemedText style={styles.emptyDataText}>
                                 Empty data
-                            </Text>
+                            </ThemedText>
                         )}
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 onPress={() => handleSelect(item)}
                             >
-                                <View style={styles.itemWrapper}>
+                                <View 
+                                    style={[
+                                        styles.itemWrapper,
+                                        { backgroundColor: colorScheme === 'dark' ?
+                                        ColorsWithOpacity(CustomColors.secondary, 0.30) : 
+                                        ColorsWithOpacity(CustomColors.dark, 0.10), }
+                                    ]}
+                                >
                                     {selectedOption === item.label ? 
-                                        <Ionicons name="radio-button-on" size={24} color={colors.primary} /> : 
-                                        <Ionicons name="radio-button-off" size={24} color={colors.black} /> 
+                                        <Ionicons 
+                                            name="radio-button-on" 
+                                            size={24} 
+                                            color={CustomColors.primary} 
+                                        /> : 
+                                        <Ionicons 
+                                            name="radio-button-off" 
+                                            size={24} 
+                                            color={CustomColors.primary} 
+                                        /> 
                                     } 
 
-                                    <Text style={styles.itemText}>
+                                    <ThemedText style={styles.itemText}>
                                         { item.label }
-                                    </Text>
+                                    </ThemedText>
                                 </View>
-
                             </TouchableOpacity>
                         )}
                     />
-
-                    {/* <FlatList 
-                        data={data}
-                        keyExtractor={(item) => item.value}
-                        ListEmptyComponent={() => (
-                            <Text style={{ marginTop: 25, fontSize: 17, textAlign: 'center', fontFamily: 'popins-regular' }}>
-                                Empty data
-                            </Text>
-                        )}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                onPress={() => handleSelect(item)}
-                            >
-                                <View style={styles.itemWrapper}>
-                                    {selectedOption === item.label ? 
-                                        <Ionicons name="radio-button-on" size={24} color={colors.primary} /> : 
-                                        <Ionicons name="radio-button-off" size={24} color={colors.black} /> 
-                                    } 
-
-                                    <Text style={styles.itemText}>
-                                        { item.label }
-                                    </Text>
-                                </View>
-
-                            </TouchableOpacity>
-                        )}
-                    /> */}
                 </View>
             </BottomSheetModal>
         </View>
@@ -144,11 +151,6 @@ export default function Dropdown({ textLabel, data, visibility, dropdownModalOpe
 }
 
 const styles = StyleSheet.create({
-    // formContainer: {
-    //     paddingHorizontal: 20,
-    //     marginBottom: 18,
-    // },
-
     textLabel: { 
         marginBottom: 4,
         fontSize: 17, 
@@ -165,16 +167,10 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-    placeholderText: {
-        fontFamily: 'popins-regular',
-        fontSize: 14,
-    },
-
 
     modalContainer: {
-        backgroundColor: colors.white,
         borderTopWidth: 1,
-        borderTopColor: colorsWithOpacity(colors.secondary, 0.20),
+        borderTopColor: ColorsWithOpacity(CustomColors.secondary, 0.20),
     },
     modalSubTitle: {
         fontFamily: 'popins-bold',
@@ -182,11 +178,14 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         paddingHorizontal: 24,
     },
+    emptyDataText: {
+        marginTop: 25, 
+        textAlign: 'center',
+    },
 
     itemWrapper: {
-        backgroundColor: colorsWithOpacity(colors.dark, 0.10),
-        padding: 11,
-        marginVertical: 6,
+        padding: 15,
+        marginVertical: 8,
         borderRadius: 15,
         fontFamily: 'popins-regular',
         flexDirection: 'row',

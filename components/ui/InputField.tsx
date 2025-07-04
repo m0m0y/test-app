@@ -1,5 +1,5 @@
 import { StyleSheet, TextInput, StyleProp, TextStyle, TextInputProps, View, Text } from 'react-native';
-import { colors } from '@/constants/ColorScheme';
+import { CustomColors } from '@/constants/ColorScheme';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '../ThemedInput';
 
@@ -36,7 +36,7 @@ export default function InputField({
 const styles = StyleSheet.create({
   inputContainer: { marginVertical: 10 },
   errorText: {
-    color: colors.danger,
+    color: CustomColors.danger,
     fontFamily: 'popins-regular'
   },
 });

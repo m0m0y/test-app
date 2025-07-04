@@ -1,103 +1,150 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, TextInputProps, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, TextInputProps, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { ThemedInput } from '../ThemedInput';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
+import DateFormat from '@/constants/DateFormat';
+import { ColorsWithOpacity, CustomColors } from '@/constants/ColorScheme';
 
 interface InputDateComponentProps {
-    textLabel?: string,
-    dateValue: string,
-    monthValue: string,
-    yearValue: string,
-    onChangeText: (field: 'date' | 'month' | 'year', value: string) => void,
+    textLabel?: string;
+    onBirthdayChange?: (birthday: Date, age: string) => void;
+    initialDate?: Date;
 }
 
 export default function InputDateGroup({ 
     textLabel, 
-    dateValue, 
-    monthValue, 
-    yearValue, 
-    onChangeText, 
+    onBirthdayChange,
+    initialDate = new Date(),
 }: InputDateComponentProps) {
+    const colorScheme = useColorScheme();
+    const [birthdate, setBirthdate] = useState<Date>(initialDate);
+    const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+
+    // Calculate age function
+    const calculateAge = (birthdate: Date): number => {
+        const today = new Date();
+        const birth = new Date(birthdate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        
+        return age;
+    };
+
+    useEffect(() => {
+        const currentAge = calculateAge(birthdate);
+        onBirthdayChange?.(birthdate, currentAge.toString());
+    }, [birthdate, onBirthdayChange]);
+
+    // Function para sa pag-handle ng date change
+    const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date): void => {
+        const currentDate = selectedDate || birthdate;
+        setShowDatePicker(false);
+        setBirthdate(currentDate);
+    };
+
+    // Function para i-show ang date picker
+    const showDatepicker = (): void => {
+        setShowDatePicker(true);
+    };
 
     return (
-        <View style={styles.dateFormWrapper}>
-            <ThemedText type='label'>
-                { textLabel }
-            </ThemedText>
-
-            <View style={styles.inputFieldWrapper}>
-                <View style={styles.textInputContainer}>
-                    <ThemedText type='defaultSemiBold'> Day </ThemedText>
-                    <ThemedInput 
-                        keyboardType='numeric'
-                        placeholder='DD'
-                        value={dateValue}
-                        onChangeText={(text: string) => onChangeText('date', text)}
-                        style={styles.textInput}
-                    />
-                </View>
+        <>
+            <View style={styles.dateFormWrapper}>
+                <ThemedText type='label'>
+                    { textLabel }
+                </ThemedText>
 
                 <View style={styles.textInputContainer}>
-                    <ThemedText type='defaultSemiBold'> Month </ThemedText>
-                    <ThemedInput 
-                        keyboardType='numeric'
-                        placeholder='MM'
-                        value={monthValue}
-                        onChangeText={(text: string) => onChangeText('month', text)}
-                        style={styles.textInput}
-                    />
-                </View>
+                    <View style={{ flexDirection: 'column' }}>
+                        <ThemedText type='defaultSemiBold'> 
+                            Select Birth Date
+                        </ThemedText>
 
-                <View style={styles.textInputContainer}>
-                    <ThemedText type='defaultSemiBold'> Year </ThemedText>
-                    <ThemedInput 
-                        keyboardType='numeric'
-                        placeholder='YYYY'
-                        value={yearValue}
-                        onChangeText={(text: string) => onChangeText('year', text)}
-                        style={styles.textInput}
-                    />
-                </View>
+                        <TouchableOpacity
+                            style={[
+                                styles.dateSelect,
+                                { 
+                                    borderColor: colorScheme === 'dark' ?
+                                    Colors.dark.borderColor :
+                                    Colors.light.borderColor
+                                }
+                            ]} 
+                            onPress={showDatepicker}
+                        >
+                            <ThemedText type='small'>
+                                {DateFormat(birthdate)}
+                            </ThemedText>
+                        </TouchableOpacity>
+                    </View>
+                    
+                    <View style={{ flexDirection: 'column' }}>
+                        <ThemedText type='defaultSemiBold'> 
+                            Age 
+                        </ThemedText>
 
-                <View style={styles.textInputContainer}>
-                    <ThemedText type='defaultSemiBold'> Age </ThemedText>
-                    <ThemedInput 
-                        style={[
-                            styles.textInput,
-                            {backgroundColor: '#e0e0e0'}
-                        ]}
-                        placeholder='--'
-                        editable={false}
-                    />
+                        <ThemedInput 
+                            style={[
+                                styles.textInput,
+                                { backgroundColor: ColorsWithOpacity(CustomColors.secondary, 0.40) }
+                            ]}
+                            placeholder='--'
+                            value={calculateAge(birthdate).toString()}
+                            editable={false}
+                        />
+                    </View>                
                 </View>
-                
             </View>
-        </View>
+
+            {/* DateTimePicker component */}
+            {showDatePicker && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={birthdate}
+                    mode="date"
+                    display="default"
+                    onChange={handleDateChange}
+                    maximumDate={new Date()} // Hindi pwedeng future date
+                    minimumDate={initialDate} // Minimum na 1900
+                />
+            )}
+        </>
     )
 }
 
 const styles = StyleSheet.create({
     dateFormWrapper: {
-        marginVertical: 10
-    },
-    inputFieldWrapper: {
-        flexDirection: 'row', 
-        alignItems: 'center',
-        gap: 10,
-        flex: 1,
+        marginBottom: 10,
     },
     textInputContainer: {
-        flexDirection: 'column',
+        flexDirection: 'row',
         paddingVertical: 5,
+        gap: 5,
     },
     textInput: {
         borderRadius: 100,
         borderWidth: 1,
         paddingHorizontal: 14,
         paddingVertical: 10,
-        fontFamily: 'popins-regular',
+        width: 85,
+    },
+
+    dateSelect: {
+        borderRadius: 100,
+        borderWidth: 1,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
         fontSize: 14,
-        width: 83,
-        // marginRight: 3,
+        width: 270,
+    },
+    ageText: {
+        fontSize: 14,
+        color: '#666',
     },
 })

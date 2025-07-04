@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Modal, StatusBar, Pressable, ViewStyle, TextStyle } from 'react-native';
-import { colors, colorsWithOpacity } from "@/constants/ColorScheme";
+import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
 
 import CustomButton from '@/components/ui/Button';
 
@@ -36,7 +36,7 @@ export default function AlertModal(props: MessageModalProps) {
             onRequestClose={props.handleRequestClose}
             onShow={() => {
                     if(props.changeStatusBar) {
-                        StatusBar.setBackgroundColor(colorsWithOpacity(colors.dark, 0.50), true)
+                        StatusBar.setBackgroundColor(ColorsWithOpacity(CustomColors.dark, 0.50), true)
                     }
                 }
             }
@@ -77,20 +77,20 @@ const styles = StyleSheet.create({
         flex: 1, 
         justifyContent: 'center', 
         alignItems: 'center',
-        backgroundColor: colorsWithOpacity(colors.dark, 0.50),
+        backgroundColor: ColorsWithOpacity(CustomColors.dark, 0.50),
     },
     alertModalContainer: {
-        backgroundColor: colors.white,
+        backgroundColor: CustomColors.white,
         width: '75%',
         borderRadius: 5,
-        shadowColor: colors.black,
+        shadowColor: CustomColors.black,
         shadowOpacity: 10,
         shadowRadius: 3,
         elevation: 5,
     },
 
     textContainer: {
-        backgroundColor: colors.white, 
+        backgroundColor: CustomColors.white, 
         padding: 24, 
         borderRadius: 10,
     },
@@ -98,18 +98,15 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        backgroundColor: colorsWithOpacity(colors.secondary, 0.1),
+        backgroundColor: ColorsWithOpacity(CustomColors.secondary, 0.1),
         borderTopWidth: StyleSheet.hairlineWidth, 
         borderTopColor: 'lightgray',
-        // borderWidth: 1,
         height: 50,
     },
     button: {
         paddingTop: 10,
         paddingHorizontal: 20, 
         marginVertical: 4, 
-        // textAlign: 'center',
-        // borderWidth: 1,
         width: '100%',
         height: 40,
     },

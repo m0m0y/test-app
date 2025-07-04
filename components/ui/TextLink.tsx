@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import { StyleSheet, TouchableOpacity, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 
 interface LinkProps {

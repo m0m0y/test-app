@@ -1,6 +1,6 @@
 import { Text, type TextProps, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { colors } from '@/constants/ColorScheme';
+import { CustomColors } from '@/constants/ColorScheme';
 
 export type ThemedTextProps = TextProps & {
   // type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   link: {
     // lineHeight: 30,
     fontSize: 16,
-    color: colors.primary,
+    color: CustomColors.primary,
   },
   description: {
     fontFamily: 'popins-medium',

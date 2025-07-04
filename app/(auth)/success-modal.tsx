@@ -1,16 +1,13 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import { View, Modal, StyleSheet, StatusBar } from 'react-native';
+import { View, StyleSheet, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
-import { colors, colorsWithOpacity } from '@/constants/ColorScheme';
-
+// import { colors, colorsWithOpacity } from '@/constants/ColorScheme';
 import { ThemedView } from '@/components/ThemedView';
-
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
 import { BottomSheetModal, BottomSheetView, } from '@gorhom/bottom-sheet';
 
-import IconButton from '@/components/ui/IconButton';
+// import IconButton from '@/components/ui/IconButton';
 import CustomButton from '@/components/ui/Button';
 
 interface ModalProps {
@@ -33,9 +30,9 @@ export default function SuccessModal({ visibility, successOnClose, content, butt
     }
   }, [visibility]);
 
-  const handleDismissModal = useCallback(() => {
-    bottomSheetRef.current?.dismiss();
-  }, [])
+  // const handleDismissModal = useCallback(() => {
+  //   bottomSheetRef.current?.dismiss();
+  // }, [])
 
   const handlerGoLogin = () => {
     router.push('/(auth)/signin');

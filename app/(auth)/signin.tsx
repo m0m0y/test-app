@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Dimensions, Image, ImageBackground, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, colorsWithOpacity } from "@/constants/ColorScheme";
+import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
 import { useRouter } from 'expo-router';
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -184,7 +184,7 @@ export default function SigninScreen() {
                   <Ionicons 
                     name="log-in" 
                     size={20} 
-                    color={colors.secondary}   
+                    color={CustomColors.secondary}   
                   />
                   <ThemedText style={styles.subTitleText}>START TO SIGN IN</ThemedText>
                 </View>
@@ -278,22 +278,12 @@ export default function SigninScreen() {
           changeStatusBar={true}
           content={
             <>
-              {/* <Text style={{ 
-                textAlign: 'center',
-                fontSize: 18,
-                fontFamily: 'popins-semibold',
-                fontWeight: 'bold',
-                paddingVertical: 5,
-                color: colors.dark,
-              }}>
-                Error
-              </Text> */}
               <Text style={{
                 marginVertical: 5,
                 fontFamily: 'popins-medium',
                 fontSize: 14,
                 textAlign: 'center',
-                color: colors.black,
+                color: CustomColors.black,
               }}>
                 {alertModal.alertMessage}
               </Text>
@@ -310,7 +300,7 @@ export default function SigninScreen() {
               buttonTitle: 'Find my Account', 
               buttonType: 'outlineDark', 
               buttonOnpress: findAccountHandler,
-              buttonTextStyle: { color: colors.danger, fontFamily: 'popins-semibold' }
+              buttonTextStyle: { color: CustomColors.danger, fontFamily: 'popins-semibold' }
             }
           ]}
           handleRequestClose={alertCloseHandler}
@@ -323,7 +313,6 @@ export default function SigninScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#30334E',
   },
 
   imageContainer: {
@@ -343,7 +332,6 @@ const styles = StyleSheet.create({
   },
 
   contentContainer: {
-    // backgroundColor: colors.white,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -353,7 +341,6 @@ const styles = StyleSheet.create({
     right: 0,
   },
   textContainer: {
-    // borderWidth: 1,
     marginVertical: 5,
   },
   subTitle: {
@@ -361,14 +348,11 @@ const styles = StyleSheet.create({
   },
   subTitleText: {
     fontFamily: 'popins-bold', 
-    color: colors.secondary, 
+    color: CustomColors.secondary, 
   },
   textTitle: {
     fontFamily: 'popins-bold',
     fontSize: 30,
-    // color: colors.dark,
-    // marginVertical: 5,
-    // lineHeight: 40,
   },
 
   formContainer: {
@@ -384,51 +368,30 @@ const styles = StyleSheet.create({
   },
   textInputFocused: {
     borderWidth: 2,
-    borderColor: colorsWithOpacity(colors.primary, 0.8), // Change to your preferred focus color
+    borderColor: ColorsWithOpacity(CustomColors.primary, 0.8), // Change to your preferred focus color
   },
   fogotTextLink: {
     fontSize: 14,
     fontFamily: 'popins-regular',
   },
 
-
   buttonContainer: {
-    // borderWidth: 1,
     marginVertical: 5,
   },
 
 
   textLinkContainer: {
-    // borderWidth: 1,
     marginVertical: 5,
     alignSelf: 'center',
   },
   textDesc: {
     fontFamily: 'popins-regular',
     fontSize: 15,
-    // color: '#333',
   },
   highlightText: {
-    color: colors.primary,
+    color: CustomColors.primary,
     fontFamily: 'popins-bold',
     textDecorationLine: 'underline',
   },
-
-
-  // alertTitle: {
-  //   textAlign: 'center',
-  //   fontSize: 16,
-  //   fontFamily: 'popins-semibold',
-  //   fontWeight: 'bold',
-  //   paddingVertical: 5,
-  //   color: colors.dark,
-  // },
-  // alertMessage: {
-  //   marginVertical: 5,
-  //   fontFamily: 'popins-medium',
-  //   fontSize: 14,
-  //   textAlign: 'center',
-  //   color: colors.black,
-  // },
 });
 

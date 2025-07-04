@@ -1,19 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal, StyleSheet, Text, View, Image, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, View, Image, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, colorsWithOpacity } from '@/constants/ColorScheme';
-
+import { CustomColors } from '@/constants/ColorScheme';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
-
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
 import { BottomSheetModal, BottomSheetView, } from '@gorhom/bottom-sheet';
 
 import CustomButton from '@/components/ui/Button';
-import IconButton from '@/components/ui/IconButton';
 import InputField from '@/components/ui/InputField';
 import TextLink from '@/components/ui/TextLink';
 import SuccessModal from "./success-modal";
@@ -54,8 +50,6 @@ export default function ForgotPassword({ visibility, fogotClose }: ModalProps) {
     if (isValid) {
       setEmail('');
       setSuccessModal(true);
-      // modalState();
-      // setErrorStyle(true);
     }
   }
 
@@ -79,13 +73,6 @@ export default function ForgotPassword({ visibility, fogotClose }: ModalProps) {
 
   return (
     <>
-      {/* <Modal
-        animationType='slide'
-        transparent={true}
-        visible={visibility}
-        onRequestClose={fogotClose} // Required on nav back button 
-      > */}
-
       <BottomSheetModal
         ref={bottomSheetRef}
         snapPoints={['90%']}
@@ -121,7 +108,7 @@ export default function ForgotPassword({ visibility, fogotClose }: ModalProps) {
                   placeholder: 'Enter your email',
                   style: [
                     styles.textInput,
-                    errorStyle && { borderColor: colors.danger }
+                    errorStyle && { borderColor: CustomColors.danger }
                   ]
                 }}
                 errorMesage={errorMessage}
@@ -157,87 +144,13 @@ export default function ForgotPassword({ visibility, fogotClose }: ModalProps) {
         </TouchableWithoutFeedback>
       </BottomSheetModal>
 
-          {/* <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            // style={{ flex: 1 }}
-          > */}
-            {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}> */}
-              {/* <ThemedView style={styles.modalContainer}> */}
-                {/* <View style={styles.modalContent}> */}
-                  {/* <IconButton
-                    iconName='arrow-back'
-                    iconSize={25}
-                    onPress={fogotClose}
-                    iconButtonStyle={{ marginBottom: 10, width: 35, height: 33 }}
-                  /> */}
-
-                  {/* <ScrollView contentContainerStyle={styles.scrollViewContainer}> */}
-                    {/* <Image source={require('../../assets/images/nyc-logo.png')} style={styles.imageLogo} />
-
-                    <View style={styles.textContainer}>
-                      <ThemedText type='title' style={{ lineHeight: 50, }}>
-                        Forgot Password👋
-                      </ThemedText>
-                      <ThemedText style={styles.modalText}>
-                        Enter your email and we'll reset your password
-                      </ThemedText>
-                    </View>
-
-                    <InputField
-                      textLabel='Email Address'
-                      inputLabel='Enter your email'
-                      textInputStyle={[
-                        styles.textInput,
-                        errorStyle && { borderColor: colors.danger }
-                      ]}
-                      inputConfig={{
-                        keyboardType: 'email-address',
-                        autoFocus: true,
-                        value: email,
-                        onChangeText: handleChange,
-                        autoCapitalize: 'none',
-                      }}
-                      errorMesage={errorMessage}
-                    />
-
-                    <View style={styles.textContainer}>
-                      <ThemedText style={[ styles.modalText, { textAlign: 'center', marginVertical: 5, lineHeight: 18 } ]}>
-                        For a quick and easier solution, simply change your password.
-                        {" "}
-                        <TextLink
-                          text='Change Password'
-                          textStyle={styles.textHighlight}
-                          onPress={hanlderChangePass}
-                          style={{ marginTop: 20 }}
-                        />
-                      </ThemedText>
-                    </View> */}
-                  {/* </ScrollView> */}
-                {/* </View> */}
-              {/* </ThemedView> */}
-            {/* </TouchableWithoutFeedback> */}
-
-            {/* <ThemedView style={styles.buttonContainer}>
-              <CustomButton
-                title='Send Password'
-                type='primary'
-                onPress={handleSubmit}
-                buttonStyle={styles.button}
-                textStyle={styles.buttonText}
-              />
-            </ThemedView> */}
-          {/* </KeyboardAvoidingView> */}
-
-      
-      {/* </Modal> */}
-
       {successModal && (
         <SuccessModal
           visibility={successModal}
           successOnClose={handlerSuccessClose}
           content= {
             <>
-              <Ionicons name="mail-open" size={80} color={colors.primary} />
+              <Ionicons name="mail-open" size={80} color={CustomColors.primary} />
               <ThemedText type='title' style={{ lineHeight: 40, }}>Password has been sent to your email. 🔑</ThemedText>
               <ThemedText type='description'>Kindly check your inbox and make sure you entered the correct email.</ThemedText> 
             </>
@@ -250,33 +163,13 @@ export default function ForgotPassword({ visibility, fogotClose }: ModalProps) {
 }
 
 const styles = StyleSheet.create({
-  // scrollViewContainer: {
-  //   flexGrow: 1,
-  // },
-
   modalContainer: {
-    // backgroundColor: 'white',
     flex: 1,
     width: '100%',
-    // height: '100%',
-    // borderTopEndRadius: 10,
-    // borderTopStartRadius: 10,
-    // marginTop: 50,
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 0,
-    // borderWidth: 2,
-
-    // Embossed effect
-    // shadowColor: '#000',
-    // shadowOffset: { width: 4, height: 4 }, // Offset to bottom-right for depth
-    // shadowOpacity: 0.5, // Soft shadow
-    // shadowRadius: 15,
-    // elevation: 10, // For Android
   },
-  // modalContent: {
-  //   flex: 1,
-  // },
 
   imageLogo: {
     width: 254,
@@ -288,11 +181,6 @@ const styles = StyleSheet.create({
   textContainer: {
     marginVertical: 8,
   },
-  // modalTitle: {
-  //   fontSize: 28,
-  //   height: 40,
-  //   fontFamily: 'popins-bold',
-  // },
   modalText: {
     fontSize: 14,
     fontFamily: 'popins-regular',
@@ -312,9 +200,7 @@ const styles = StyleSheet.create({
   },
 
   buttonContainer: {
-    // borderWidth: 2,
     padding: 20,
-    // backgroundColor: 'white',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'lightgray',
   },
@@ -329,13 +215,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
   },
-
-
-  // textTitle: {
-  //   width: '100%',
-  // },
-  // textDesc: {
-  //   fontFamily: 'popins-medium',
-  //   fontSize: 16,
-  // },
 });
