@@ -51,7 +51,7 @@ export const useLocationStore = create<LocationStore>((set) => ({
     selectedBarangay: undefined,
 
     resetLocationData: () => {
-        set({ selectedIsland: undefined, selectedRegion: undefined, selectedProvince: undefined, selectedMunicipality: undefined, regions: [], province: [], municipality: [], });
+        set({ selectedIsland: undefined, selectedRegion: undefined, selectedProvince: undefined, selectedMunicipality: undefined, regions: [], province: [], municipality: [], barangay: [] });
     },
 
     fetchRegions: async(islandName: string) => {

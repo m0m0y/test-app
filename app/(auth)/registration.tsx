@@ -1,21 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Keyboard, Animated, Easing, Text, useAnimatedValue, } from 'react-native';
+import { 
+    StyleSheet, 
+    KeyboardAvoidingView, 
+    Platform, 
+    ScrollView, 
+    TouchableWithoutFeedback, 
+    Keyboard, 
+    Animated, 
+    Easing, 
+} from 'react-native';
 import { ColorsWithOpacity, CustomColors } from '@/constants/ColorScheme';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { headerTitle } from '@/components/data/registrationHeaderText';
+import { Ionicons } from '@expo/vector-icons';
 
 import AccountDetails from '@/components/ui/AccountDetails';
 import AccountInformation from '@/components/ui/AccountInformation';
 import AccountPreview from '@/components/ui/AccountPreview';
-import CustomButton from '@/components/ui/Button';
-import { Ionicons } from '@expo/vector-icons';
+
 
 export default function registration() {
     const colorScheme = useColorScheme();
-    const { currentStep, nextStep, prevStep } = useRegistrationStore();
+    const { currentStep, resetRegistration } = useRegistrationStore();
     const totalSteps = 3;
     const progressPercentage = (currentStep / totalSteps) * 100;
     const [activeNumber, setActiveNumber] = useState(false);
@@ -24,7 +33,7 @@ export default function registration() {
     const progressAnim = useRef(new Animated.Value(0)).current;
     const formAnim = useRef(new Animated.Value(0)).current;
     const selectedTitle = headerTitle.find(step => step.id === currentStep);
-
+    
     useEffect(() => {
         // Create and start animations directly
         const parallelAnimation  = Animated.parallel([
@@ -77,6 +86,11 @@ export default function registration() {
 
     }, [currentStep, progressPercentage]);
 
+    // Call this to clear stuck loading
+    useEffect(() => {
+        resetRegistration(); 
+    }, []);
+
     // Progressbar width animation
     const animatedWidth = progressAnim.interpolate({
         inputRange: [0, 100],
@@ -116,7 +130,7 @@ export default function registration() {
             <Animated.View 
                 style={[
                     styles.numberWrapper,
-                    { backgroundColor: stepStyle.backgroundColor },
+                    { backgroundColor: stepStyle.backgroundColor, },
                 ]}
             >
                 <ThemedText 
@@ -132,7 +146,7 @@ export default function registration() {
     return (
         <ThemedView style={styles.container}>
             {/* Header Content */}
-            <View 
+            <ThemedView 
                 style={[
                     styles.headerContainer,
                     { 
@@ -142,15 +156,39 @@ export default function registration() {
                     }
                 ]}
             >
-                <View style={styles.headerWrapper}>
-                    <View style={styles.titleContainer}>
+                <ThemedView 
+                    style={[
+                        styles.headerWrapper,
+                        {
+                            backgroundColor: colorScheme === 'dark' ?
+                            '#303459' :
+                            ColorsWithOpacity(CustomColors.secondary, 0.04),
+                        }
+                    ]}>
+                    <ThemedView 
+                        style={[
+                            styles.titleContainer,
+                            {
+                                backgroundColor: colorScheme === 'dark' ?
+                                '#303459' :
+                                ColorsWithOpacity(CustomColors.secondary, 0.04),
+                            }
+                        ]}>
 
                         {/* Number of step in right */}
-                        <View style={styles.numberContainer}>
+                        <ThemedView 
+                            style={[
+                                styles.numberContainer,
+                                { 
+                                    backgroundColor: colorScheme === 'dark' ?
+                                    '#303459' :
+                                    ColorsWithOpacity(CustomColors.secondary, 0.04),
+                                }
+                            ]}>
                             {Array.from({ length: currentStep }, (_, i) => (
                                 <NumberCircle key={`completed-${i + 1}`} number={i + 1} />
                             ))}
-                        </View>
+                        </ThemedView>
                        
                         <Animated.View 
                             style={[
@@ -165,18 +203,26 @@ export default function registration() {
                                 {selectedTitle?.subtitle}
                             </ThemedText>
                         </Animated.View>
-                    </View>
+                    </ThemedView>
 
                     {/* Number of step in left */}
-                    <View style={styles.numberContainer}>
+                    <ThemedView 
+                        style={[
+                            styles.numberContainer,
+                            { 
+                                backgroundColor: colorScheme === 'dark' ?
+                                '#303459' :
+                                ColorsWithOpacity(CustomColors.secondary, 0.04),
+                            }
+                        ]}>
                         {currentStep < 3 && 
                             Array.from({ length: 3 - currentStep }, (_, i) => (
                                 <NumberCircle key={`remaining-${currentStep + i + 1}`} number={currentStep + i + 1} />
                             ))
                         }
-                    </View>
-                </View>
-            </View>
+                    </ThemedView>
+                </ThemedView>
+            </ThemedView>
 
             {/* Progress Bar */}
             <ThemedText style={styles.progressBackground}>
@@ -215,11 +261,6 @@ const styles = StyleSheet.create({
     headerContainer: { 
         paddingHorizontal: 15, 
         paddingVertical: 18, 
-        // backgroundColor: '#F8F8F8', 
-        // marginBottom: 10,
-        // borderBottomWidth: 5,
-        // borderBottomColor: CustomColors.primary,
-        // borderStartWidth: 50,
     },
 
     headerWrapper: { 
@@ -239,7 +280,6 @@ const styles = StyleSheet.create({
         gap: 5, 
     },
     numberWrapper: {
-        // backgroundColor: ColorsWithOpacity(CustomColors.secondary, 0.20), 
         width: 40, 
         height: 40,
         borderRadius: 25,
@@ -259,5 +299,17 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: CustomColors.primary,
         minWidth: 6, // Minimum width para makita kahit step 1
+    },
+
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: ColorsWithOpacity(CustomColors.dark, 0.70), // Transparent black
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000, // Ensure it's on top
     },
 });

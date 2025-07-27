@@ -1,70 +1,105 @@
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View, TextInputProps } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, TextInputProps } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { ButtonColors } from '@/constants/ButtonColors';
+import { ThemedView } from '../ThemedView';
 import { ThemedInput } from '../ThemedInput';
+import { useRegistrationStore } from '@/store/useRegistrationStore';
+
+import ErrorMessage from '../ErrorMessage';
+import SuccessMessage from '../SuccessMessage';
 
 interface InputGroupProps {
     textLabel?: string;
-    textValue: string;
     inputConfig?: TextInputProps;
-    onChangeText: (text: string) => void;
     onButtonClick: () => void;
     buttonLabel?: string;
-    isDisabledBtn?: boolean;
+    isDisabled?: boolean | undefined;
+    errorMessage?: string;
+    verifyMessage?: string | undefined;
     OTPtimer?: string;
 }
 
-export default function InputGroup({ textLabel, textValue, onChangeText, inputConfig, onButtonClick, buttonLabel, isDisabledBtn, OTPtimer }: InputGroupProps) {
+export default function InputGroup({ 
+    textLabel, 
+    inputConfig, 
+    onButtonClick, 
+    buttonLabel, 
+    isDisabled, 
+    errorMessage,
+    verifyMessage,
+    OTPtimer,
+}: InputGroupProps) {
     return (
-        <View>
-            <ThemedText type='label'>
-                {textLabel}
-            </ThemedText>
+        <>
+            <ThemedView style={styles.inputContainer}>
+                <ThemedText type='label'>
+                    {textLabel}
+                </ThemedText>
 
-            <View style={styles.textInputWrapper}>
-                <ThemedInput 
-                    style={styles.textInput}
-                    value={textValue}
-                    onChangeText={onChangeText}
-                    {...inputConfig}
-                />
+                <ThemedView style={styles.textInputWrapper}>
+                    <ThemedInput 
+                        {...inputConfig}
+                        style={styles.textInput}
+                        type={
+                            // Contional approach for UI
+                            isDisabled === true 
+                            ? 'success'
+                            : errorMessage
+                                ? 'error'
+                                : 'default'
+                        }
+                    />
 
-                <Pressable 
-                    style={({ pressed }) => [
-                        styles.inputButton,
-                        !textValue && styles.buttonDisabled,
-                        pressed && textValue && styles.buttonPressed,
-                        isDisabledBtn ? styles.buttonDisabled : {}
-                    ]}
-                    onPress={!textValue ? undefined : onButtonClick}
-                    disabled={isDisabledBtn}
-                >
-                    <Text style={styles.inputButtonText}>
-                        {buttonLabel}
-                    </Text>
-                </Pressable>
-            </View>
+                    <Pressable 
+                        style={({ pressed }) => [
+                            styles.inputButton,
+                            !inputConfig?.value && styles.buttonDisabled,
+                            pressed && inputConfig?.value && styles.buttonPressed,
+                            // Disabled when counter is running in OTP
+                            isDisabled === false && styles.buttonDisabled,
+                            isDisabled === true && styles.buttonUpdate,
+                        ]}
+                        onPress={inputConfig?.value ? onButtonClick : undefined}
+                        // Disabled when counter is running in OTP
+                        disabled={isDisabled === false}
+                    >
+                        <ThemedText style={styles.inputButtonText}>
+                            {buttonLabel}
+                        </ThemedText>
+                    </Pressable>
+                </ThemedView>
 
-            <Text style={{ fontSize: 14, fontFamily: 'poppins-regular', textAlign: 'right' }}>{isDisabledBtn ? 'Resend in ' + OTPtimer : ''}</Text>
-        </View>
+                {/* VERIFY MESSAGE */}
+                {verifyMessage && (
+                    <SuccessMessage message={verifyMessage} />
+                )}
+
+                {/* ERROR MESSAGE */}
+                {errorMessage && (
+                    <ErrorMessage message={errorMessage} />
+                )}
+
+                {/* DISPLAY TIMER */}
+                {isDisabled === false &&(
+                    <ThemedText type='small' style={styles.OTPTimer}> Resend in {OTPtimer} </ThemedText>
+                )}
+            </ThemedView>
+        </>
     )
 }
 
 const styles = StyleSheet.create({
+    inputContainer: { marginVertical: 10 },
     textInputWrapper: {
         flexDirection: 'row', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        gap: 5,
     },
     textInput: {
         borderRadius: 100,
-        borderWidth: 1,
-        paddingHorizontal: 14,
+        paddingHorizontal: 15,
         paddingVertical: 10,
-        fontFamily: 'popins-regular',
-        fontSize: 14,
         width: 270,
     },
     inputButton: { 
@@ -72,13 +107,19 @@ const styles = StyleSheet.create({
         borderColor: ButtonColors.primary.border, 
         borderWidth: ButtonColors.primary.borderWidth,
         borderRadius: 100,
-        paddingVertical: 11,
-        width: 85,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        width: 90,
     },
     buttonDisabled: {
         backgroundColor: ButtonColors.secondary.background, 
         borderColor: ButtonColors.secondary.border, 
         borderWidth: ButtonColors.secondary.borderWidth,
+    },
+    buttonUpdate: {
+        backgroundColor: ButtonColors.primary.background, 
+        borderColor: ButtonColors.primary.border, 
+        borderWidth: ButtonColors.primary.borderWidth,
     },
     buttonPressed: {
         opacity: 0.76,
@@ -86,6 +127,10 @@ const styles = StyleSheet.create({
     inputButtonText: {
         color: ButtonColors.secondary.text,
         textAlign: 'center',
-        fontFamily: 'popins-semibold',
-    }
+    },
+
+    OTPTimer: { 
+        fontFamily: 'poppins-regular', 
+        textAlign: 'right' 
+    },
 })

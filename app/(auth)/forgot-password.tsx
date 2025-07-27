@@ -114,7 +114,6 @@ export default function ForgotPassword({ visibility, fogotClose }: ModalProps) {
                   autoCapitalize: 'none',
                   placeholder: 'Enter your email',
                   style: [
-                    styles.textInput,
                     errorStyle && { borderColor: CustomColors.danger }
                   ]
                 }}
@@ -190,14 +189,6 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 14,
     fontFamily: 'popins-regular',
-  },
-  textInput: {
-    borderRadius: 100,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontFamily: 'popins-regular',
-    fontSize: 14,
   },
   textHighlight: {
     fontSize: 14,

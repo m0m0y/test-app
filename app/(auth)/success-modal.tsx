@@ -1,13 +1,11 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, } from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
-// import { colors, colorsWithOpacity } from '@/constants/ColorScheme';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { BottomSheetModal, BottomSheetView, } from '@gorhom/bottom-sheet';
 
-// import IconButton from '@/components/ui/IconButton';
 import CustomButton from '@/components/ui/Button';
 
 interface ModalProps {
@@ -83,11 +81,9 @@ export default function SuccessModal({ visibility, successOnClose, content, butt
                 iconButtonStyle={styles.iconButton}
               /> */}
 
-              {content ? (
-                <View style={styles.textContainer}>
-                  {content}
-                </View>
-              ) : null}
+              {content && 
+                <ThemedView style={styles.textContainer}>{content}</ThemedView> 
+              }
 
             {/* </View> */}
           </ThemedView>

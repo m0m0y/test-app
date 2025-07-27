@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
-import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Dimensions, Image, ImageBackground, StatusBar } from 'react-native';
+import React, { useState, } from "react";
+import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Dimensions, Image, ImageBackground, StatusBar,ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
 import { useRouter } from 'expo-router';
@@ -38,6 +38,7 @@ export default function SigninScreen() {
   const router = useRouter();
   const headerHeight = useHeaderHeight();
   const onLogin = useAuthStore((state) => state.onLogin);
+  const { isLoading  } = useAuthStore();
 
   const screenHeight = Dimensions.get('window').height;
   const keyboardOffset = Platform.OS === 'ios' ? headerHeight : 0;
@@ -74,15 +75,17 @@ export default function SigninScreen() {
   //   fetchCourse();
   // }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async () => {    
     const result = await onLogin(formData.email, formData.password);
-    // console.log(result);
-    
-    if(result && result.error) {
-      setAlertModal({ alertShow: true, alertMessage: result.message, });
-      console.log('Sign in message: ' + result.message);
+
+    if (!result.success) {
+      setAlertModal({ 
+        alertShow: true, 
+        alertMessage: result.message
+      });
     } else {
       router.replace("/(tabs)/home");
+      console.log('Error Message: ' + result.message);
     }
   }
 
@@ -107,7 +110,7 @@ export default function SigninScreen() {
     setFormData({ ...formData, [name]: value });
   }
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////// SAMPLE ONLY ////////////////////////////////////
 
   // const handleSubmit = async () => {
     // const result = await handleLogin(formData);
@@ -192,19 +195,19 @@ export default function SigninScreen() {
             {/* Form Container */}
             <ThemedView style={styles.formWrapper}>
 
-              <View style={styles.textContainer}>
-                <View style={styles.subTitle}>
+              <ThemedView style={styles.textContainer}>
+                <ThemedView style={styles.subTitle}>
                   <Ionicons 
                     name="log-in" 
                     size={20} 
                     color={CustomColors.secondary}   
                   />
                   <ThemedText style={styles.subTitleText}>START TO SIGN IN</ThemedText>
-                </View>
+                </ThemedView>
                 <ThemedText type='title' style={{ lineHeight: 50, }}>Welcome 👋</ThemedText>
-              </View>
+              </ThemedView>
 
-              <View style={styles.formContainer}>
+              <ThemedView style={styles.formContainer}>
                 <InputField
                   textLabel="Email or Username"
                   inputConfig={{
@@ -214,8 +217,7 @@ export default function SigninScreen() {
                     autoCapitalize: 'none',
                     placeholder: 'Enter your email / username',
                     style: [
-                      styles.textInput, 
-                      isFocused.email && styles.textInputFocused
+                      isFocused.email && styles.focused
                     ],
                     onFocus: () => setIsFocused(prev => ({ ...prev, email: true })),
                     onBlur: () => setIsFocused(prev => ({ ...prev, email: false })),
@@ -232,24 +234,23 @@ export default function SigninScreen() {
                     autoCapitalize: 'none',
                     placeholder: 'Enter password',
                     style: [
-                      styles.textInput, 
-                      isFocused.password && styles.textInputFocused
+                      isFocused.password && styles.focused
                     ],
                     onFocus: () => setIsFocused(prev => ({ ...prev, password: true })),
                     onBlur: () => setIsFocused(prev => ({ ...prev, password: false })),
                   }}
                 />
 
-                <View style={{ alignSelf: 'flex-end' }}>
+                <ThemedView style={{ alignSelf: 'flex-end' }}>
                   <TextLink
                     text='Forgot Password?'
                     textStyle={styles.fogotTextLink}
                     onPress={() => setForgotModal(true)}
                   />
-                </View>
-              </View>
+                </ThemedView>
+              </ThemedView>
 
-              <View style={styles.buttonContainer}>
+              <ThemedView style={styles.buttonContainer}>
                 <CustomButton
                   title='Login'
                   type='primary'
@@ -257,9 +258,9 @@ export default function SigninScreen() {
                   // buttonStyle={styles.button}
                   // textStyle={styles.buttonText}
                 />
-              </View>
+              </ThemedView>
 
-              <View style={styles.textLinkContainer}>
+              <ThemedView style={styles.textLinkContainer}>
                 <ThemedText style={styles.textDesc}>
                   New on our platform?
                   {' '}
@@ -267,12 +268,20 @@ export default function SigninScreen() {
                     Create an account
                   </ThemedText>
                 </ThemedText>
-              </View>
+              </ThemedView>
 
             </ThemedView>
 
           </ThemedView>
         </TouchableWithoutFeedback>
+
+        {isLoading && (
+          <ThemedView style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color={CustomColors.primary} />
+            <ThemedText style={{color: CustomColors.light}} type='subtitle'>Loading...</ThemedText>
+          </ThemedView>
+        )}
+
       </KeyboardAvoidingView>
 
       {/* FOGRGOT MODAL */}
@@ -369,15 +378,7 @@ const styles = StyleSheet.create({
   formContainer: {
     marginBottom: 5,
   },
-  textInput: {
-    borderRadius: 100,
-    borderWidth: 1,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    fontFamily: 'popins-regular',
-    fontSize: 14,
-  },
-  textInputFocused: {
+  focused: {
     borderWidth: 2,
     borderColor: ColorsWithOpacity(CustomColors.primary, 0.8), // Change to your preferred focus color
   },
@@ -403,6 +404,18 @@ const styles = StyleSheet.create({
     color: CustomColors.primary,
     fontFamily: 'popins-bold',
     textDecorationLine: 'underline',
+  },
+
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: ColorsWithOpacity(CustomColors.dark, 0.70), // Transparent black
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000, // Ensure it's on top
   },
 });
 

@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { CustomColors } from '@/constants/ColorScheme';
 
-const indexStyles = StyleSheet.create({
+const landing = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -88,4 +88,4 @@ const indexStyles = StyleSheet.create({
   }
 });
   
-export default indexStyles;
+export default landing;

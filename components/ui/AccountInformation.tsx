@@ -1,20 +1,43 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Keyboard, } from 'react-native';
 import { CustomColors, ColorsWithOpacity } from '@/constants/ColorScheme';
 import { ThemedView } from '../ThemedView';
 import { ThemedText } from '../ThemedText';
-import { Ionicons } from '@expo/vector-icons';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
-import { designations } from '../data/designationData';
+import { designations, sectorialGroup, skPosition, statementOfEmployment } from '../data/dropdownOptions';
+import { gender } from '../data/genderData';
 
 import Dropdown from './Dropdown';
 import CustomButton from './Button';
 import InputField from './InputField';
+import RadioButton from './RadioButton';
+import SKForm from './SKForm';
+import LYDOForm from './LYDOForm';
+import LYDCForm from './LYDCForm';
 
 export default function AccountInformation() {
     const { currentStep, nextStep, prevStep } = useRegistrationStore();
-    const [dropDownModal, setDropDownModal] = useState(false);
+    const [designationDropdown, setDesignationDropdown] = useState(false);
+    const [sectorialDropdown, setSectorialDropdown] = useState(false);
+    const [skPositionDropdown, setSkPositionDropdown] = useState(false);
+    const [statementOfEmploymentDropdown, setStatementOfEmploymentDropdown] = useState(false);
+
     const [designation, setDesignation] = useState('');
+    const [skPositon, setSkPosition] = useState('');
+    const [soe, setSoe] = useState('');
+    const [selectedGender, setSelectedGender] = useState('male'); // since I put a default value here
+
+    const getDesignationLabel = () => {
+        const designationLabel = designations.find(item => item.value === designation);
+        const splitLabel = designationLabel?.label.split(' -', 1);
+        return splitLabel?.toString();
+    }
+
+    const currentDesignation = getDesignationLabel();
+
+    const handleSelectGender = (value: string) => {
+        setSelectedGender(value);
+    };
 
     const handlerNextButton = () => {
         nextStep();
@@ -24,50 +47,141 @@ export default function AccountInformation() {
         prevStep();
     }
 
-
     return (
         <>
-            <View style={styles.formContainer}>
-                <View style={styles.dropdownWrapper}>
+            <ThemedView style={styles.formContainer}>
+                <ThemedView style={styles.dropdownWrapper}>
                     <Dropdown 
                         textLabel='Designation'
                         data={designations}
-                        visibility={dropDownModal}
+                        visibility={designationDropdown}
                         dropdownModalOpen={() => {
-                            setDropDownModal(true);
+                            setDesignationDropdown(true);
                             Keyboard.dismiss();
                         }}
-                        dropdownModalClose={() => setDropDownModal(false)}
+                        dropdownModalClose={() => setDesignationDropdown(false)}
                         setSelectedValue={setDesignation}
                     />
 
-                    <View style={styles.warningMessageWrapper}>
+                    <ThemedView style={styles.warningMessageWrapper}>
                         <ThemedText style={styles.textWarningMessage}>
                             NOTE: {"\n"}
 
                             This input section change base on your designation on the account details section
                         </ThemedText>
-                    </View>
-                </View>
-               
+                    </ThemedView>
+                </ThemedView>
 
-
-                <View style={styles.inputWrapper}>
+                <ThemedView style={styles.inputWrapper}>
                     <InputField 
                         textLabel='First name'
                         inputConfig={{
                             keyboardType: 'default',
                             autoCapitalize: 'none',
-                            placeholder: '',
-                            style: [
-                                styles.textInput,
-                            ]
+                            placeholder: 'Type your firstname',
                         }}
                     />
-                </View>
-            </View>
 
-            <View style={styles.buttonContainer}>
+                    <InputField 
+                        textLabel='Last name'
+                        inputConfig={{
+                            keyboardType: 'default',
+                            autoCapitalize: 'none',
+                            placeholder: 'Type your lastname',
+                        }}
+                    />
+
+                    <InputField 
+                        textLabel='Middle name'
+                        inputConfig={{
+                            keyboardType: 'default',
+                            autoCapitalize: 'none',
+                            placeholder: 'Type your middlename',
+                        }}
+                    />
+
+                    <InputField 
+                        textLabel='Suffix'
+                        inputConfig={{
+                            keyboardType: 'default',
+                            autoCapitalize: 'none',
+                            placeholder: 'Ex: Jr, Sr, II etc',
+                        }}
+                    />
+
+                    <InputField 
+                        textLabel='Mobile Number'
+                        inputConfig={{
+                            keyboardType: 'default',
+                            autoCapitalize: 'none',
+                            placeholder: '000-0000-000',
+                        }}
+                    />
+
+                    <InputField 
+                        textLabel='Telephone Number'
+                        inputConfig={{
+                            keyboardType: 'default',
+                            autoCapitalize: 'none',
+                            placeholder: '#0000',
+                        }}
+                    />
+
+                    <RadioButton
+                        label='Gender'
+                        data={gender}
+                        onSelect={handleSelectGender}
+                        selectedValue={selectedGender} // select default value (male)
+                    />
+
+                    <Dropdown 
+                        textLabel='Sectorial Group'
+                        data={sectorialGroup}
+                        visibility={sectorialDropdown}
+                        dropdownModalOpen={() => {
+                            setSectorialDropdown(true);
+                            Keyboard.dismiss();
+                        }}
+                        dropdownModalClose={() => setSectorialDropdown(false)}
+                        setSelectedValue={setDesignation}
+                    />
+
+                    <InputField 
+                        textLabel='Office Address'
+                        inputConfig={{
+                            keyboardType: 'default',
+                            autoCapitalize: 'none',
+                            placeholder: 'Enter your office address',
+                        }}
+                    />
+                </ThemedView>
+
+                {currentDesignation === 'SK' && 
+                    <SKForm 
+                        label='Position'
+                        data={skPosition}
+                        visibility={skPositionDropdown}
+                        dropdownModalOpen={() => setSkPositionDropdown(true)}
+                        dropdownModalClose={() => setSkPositionDropdown(false)}
+                        setSelectedValue={setSkPosition}
+                    />
+                }
+                {currentDesignation === 'LYDO' && 
+                    <LYDOForm 
+                        label='Statement Of Employment'
+                        data={statementOfEmployment}
+                        visibility={statementOfEmploymentDropdown}
+                        dropdownModalOpen={() => setStatementOfEmploymentDropdown(true)}
+                        dropdownModalClose={() => setStatementOfEmploymentDropdown(false)}
+                        setSelectedValue={setSoe}
+                    />
+                }
+                {currentDesignation === 'LYDC' && <LYDCForm />}
+
+            </ThemedView>
+
+
+            <ThemedView style={styles.buttonContainer}>
                 <CustomButton 
                     title='Next'
                     onPress={handlerNextButton}
@@ -90,7 +204,7 @@ export default function AccountInformation() {
                         type='outlineSecondary'
                     />
                 }
-            </View>
+            </ThemedView>
         </>
     )
 }
@@ -103,10 +217,10 @@ const styles = StyleSheet.create({
     },
 
     dropdownWrapper: {
-        borderBottomWidth: 1,
-        borderBottomColor: ColorsWithOpacity(CustomColors.black, 1),
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: ColorsWithOpacity(CustomColors.secondary, 5),
         paddingBottom: 18,
-        marginBottom: 18,
+        marginBottom: 8,
     },
     warningMessageWrapper: {
         gap: 5,
@@ -123,19 +237,14 @@ const styles = StyleSheet.create({
     },
 
     inputWrapper: {
-
-    },
-    textInput: {
-        borderRadius: 100,
-        borderWidth: 1,
-        paddingHorizontal: 14,
-        paddingVertical: 10,
-        fontFamily: 'popins-regular',
-        fontSize: 14,
+        paddingBottom: 18,
+        marginBottom: 8,
+        borderBottomWidth: StyleSheet.hairlineWidth,
     },
 
     buttonContainer: {
         marginVertical: 13,
         marginHorizontal: 24,
-    }
+    },
+
 })

@@ -3,8 +3,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { CustomColors } from '@/constants/ColorScheme';
 
 export type ThemedTextProps = TextProps & {
-  // type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
-  type?: 'default' | 'defaultSemiBold' | 'title' | 'subtitle' | 'link' | 'description' | 'buttonText' | 'small' | 'label';
+  type?: 'default' | 'defaultSemiBold' | 'headerTitle' | 'title' | 'subtitle' | 'link' | 'description' | 'buttonText' | 'small'  | 'smallSemiBold' | 'label';
 };
 
 export function ThemedText({ style, type = 'default', ...rest
@@ -12,6 +11,8 @@ export function ThemedText({ style, type = 'default', ...rest
   const color = useThemeColor({ colorProps: 'text' });
   const textType = () => {
     switch(type) {
+      case 'headerTitle':
+        return styles.headerTitle
       case 'title':
         return styles.title
       case 'subtitle':
@@ -20,14 +21,16 @@ export function ThemedText({ style, type = 'default', ...rest
         return styles.link
       case 'description':
         return styles.description
-      case 'defaultSemiBold':
-        return styles.defaultSemiBold
       case 'buttonText':
         return styles.buttonText
       case 'small': 
         return styles.small
+      case 'smallSemiBold': 
+        return styles.smallSemiBold
       case 'label':
         return styles.label
+      case 'defaultSemiBold':
+        return styles.defaultSemiBold
       default:
         return styles.default
     }
@@ -37,8 +40,8 @@ export function ThemedText({ style, type = 'default', ...rest
     <Text
       style={[
         { color },
+         style,
         textType(),
-        style,
       ]}
       {...rest}
     />
@@ -55,6 +58,10 @@ const styles = StyleSheet.create({
     fontFamily: 'popins-semibold',
     fontSize: 16,
     lineHeight: 24,
+  },
+  headerTitle: {
+    fontSize: 19, 
+    fontFamily: 'popins-semibold'
   },
   title: {
     fontFamily: 'popins-bold',
@@ -84,33 +91,13 @@ const styles = StyleSheet.create({
     fontFamily: 'popins-regular',
     fontSize: 14,
   },
+  smallSemiBold: {
+    fontFamily: 'popins-semibold',
+    fontSize: 14,
+  },
   label: {
-    marginBottom: 4,
-    fontSize: 17, 
+    marginBottom: 2,
+    fontSize: 16, 
     fontFamily: 'popins-semibold',
   }
-
-  // default: {
-  //   fontSize: 16,
-  //   lineHeight: 24,
-  // },
-  // defaultSemiBold: {
-  //   fontSize: 16,
-  //   lineHeight: 24,
-  //   fontWeight: '600',
-  // },
-  // title: {
-  //   fontSize: 32,
-  //   fontWeight: 'bold',
-  //   lineHeight: 32,
-  // },
-  // subtitle: {
-  //   fontSize: 20,
-  //   fontWeight: 'bold',
-  // },
-  // link: {
-  //   lineHeight: 30,
-  //   fontSize: 16,
-  //   color: '#0a7ea4',
-  // },
 });

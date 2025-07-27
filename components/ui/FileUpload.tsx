@@ -1,57 +1,69 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, TouchableOpacity, } from 'react-native';
+import { ThemedView } from '../ThemedView';
 import { ThemedText } from '../ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { ColorsWithOpacity, CustomColors } from '@/constants/ColorScheme';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+// import { Colors } from 'react-native/Libraries/NewAppScreen';
+
+import ErrorMessage from '../ErrorMessage';
 
 import * as DocumentPicker from 'expo-document-picker';
 
-interface SelectedFile {
-  uri: string;
-  name: string;
-  size: number;
-  mimeType: string;
-}
+// interface SelectedFile {
+//   uri: string;
+//   name: string;
+//   size: number;
+//   mimeType: string;
+// }
 
 interface FileUploadProps {
     // onUploadComplete?: (response: any) => void;
     // uploadUrl: string;
-    selectedFile: SelectedFile | null;
-    setSelectedFile: React.Dispatch<React.SetStateAction<SelectedFile | null>>;
+    selectedFile: string | null;
+    // setSelectedFile: (file: SelectedFile | null) => void;
+    onPressPickDocument: () => void;
+    onPressRemoveFile: () => void;
+    errorMesage?: string;
 }
 
-export default function FileUpload({ selectedFile, setSelectedFile }: FileUploadProps) {
+export default function FileUpload({ 
+    selectedFile, 
+    // setSelectedFile,
+    onPressPickDocument,
+    onPressRemoveFile,
+    errorMesage,
+}: FileUploadProps) {
     const colorScheme = useColorScheme();
     // const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
     // const [uploading, setUploading] = useState(false);
 
-    const pickDocument = async () => {
-        try {
-            const result = await DocumentPicker.getDocumentAsync({
-                type: 'application/pdf', // Allow all file types
-                copyToCacheDirectory: true,
-            });
+    // const pickDocument = async () => {
+    //     try {
+    //         const result = await DocumentPicker.getDocumentAsync({
+    //             type: 'application/pdf', // Allow all file types
+    //             copyToCacheDirectory: true,
+    //         });
 
-            if (!result.canceled && result.assets && result.assets.length > 0) {
-                const file = result.assets[0];
-                setSelectedFile({
-                    uri: file.uri,
-                    name: file.name,
-                    size: file.size || 0,
-                    mimeType: file.mimeType || 'application/octet-stream',
-                });
-            }
-        } catch (error) {
-            console.error('Error picking document:', error);
-            Alert.alert('Error', 'Failed to pick document');
-        }
-    };
+    //         if (!result.canceled && result.assets && result.assets.length > 0) {
+    //             const file = result.assets[0];
+    //             setSelectedFile({
+    //                 uri: file.uri,
+    //                 name: file.name,
+    //                 size: file.size || 0,
+    //                 mimeType: file.mimeType || 'application/octet-stream',
+    //             });
+    //         }
+    //     } catch (error) {
+    //         console.error('Error picking document:', error);
+    //         Alert.alert('Error', 'Failed to pick document');
+    //     }
+    // };
 
-    const removeFile = (): void => {
-        setSelectedFile(null);
-    }
+    // const removeFile = () => {
+    //     setSelectedFile(null);
+    // }
 
     // const uploadFile = async () => {
     //     if (!selectedFile) {
@@ -90,12 +102,12 @@ export default function FileUpload({ selectedFile, setSelectedFile }: FileUpload
     // };
 
     return (
-        <View style={styles.uploadContainer}>
+        <ThemedView style={styles.uploadContainer}>
             <ThemedText type="label">
                 Upload File
             </ThemedText>
 
-            <View style={styles.warningMessageWrapper}>
+            <ThemedView style={styles.warningMessageWrapper}>
                 <ThemedText style={styles.textWarningMessage}>
                     PDF format only
                 </ThemedText>
@@ -103,34 +115,34 @@ export default function FileUpload({ selectedFile, setSelectedFile }: FileUpload
                 <ThemedText style={styles.textWarningMessage}>
                     Proof of Appointment or Designation or Oath of Office
                 </ThemedText>
-            </View>
+            </ThemedView>
 
-            <View style={styles.uploadWrapper}>
+            <ThemedView style={styles.uploadWrapper}>
                 {selectedFile ? (
-                    <View style={styles.fileInfoWrapper}>
+                    <ThemedView style={styles.fileInfoWrapper}>
                         <ThemedText type='description'>
-                            File: {selectedFile.name}
+                            File: {selectedFile}
                         </ThemedText>
 
                         <TouchableOpacity>
                             <ThemedText 
                                 type='small' 
                                 style={{ color: CustomColors.danger }}
-                                onPress={removeFile}
+                                onPress={onPressRemoveFile}
                             >
                                 Remove
                             </ThemedText>
                         </TouchableOpacity>
-                    </View>
+                    </ThemedView>
                 ) : ( 
-                    <View style={styles.noFileWrapper}>
+                    <ThemedView style={styles.noFileWrapper}>
                         <ThemedText type='default'>
                             No current file
                         </ThemedText>
-                    </View>
+                    </ThemedView>
                 )}
 
-                <View style={styles.fileUploadButtonContainer}>
+                <ThemedView style={styles.fileUploadButtonContainer}>
                     <Pressable 
                         style={[
                             styles.uploadButton,
@@ -140,7 +152,7 @@ export default function FileUpload({ selectedFile, setSelectedFile }: FileUpload
                                 CustomColors.secondary
                             }
                         ]}
-                        onPress={pickDocument}
+                        onPress={onPressPickDocument}
                     >
                         <Ionicons 
                             name="add"
@@ -148,7 +160,7 @@ export default function FileUpload({ selectedFile, setSelectedFile }: FileUpload
                             color={CustomColors.secondary}
                         />
                     </Pressable>
-                </View>
+                </ThemedView>
 
                 {/* {selectedFile && (
                     <TouchableOpacity
@@ -161,8 +173,12 @@ export default function FileUpload({ selectedFile, setSelectedFile }: FileUpload
                         </Text>
                     </TouchableOpacity>
                 )} */}
-            </View>
-        </View>
+            </ThemedView>
+
+            {errorMesage && (
+                <ErrorMessage message={errorMesage} />
+            )}
+        </ThemedView>
     )
 }
 
@@ -229,4 +245,12 @@ const styles = StyleSheet.create({
         borderRadius: 2,
     },
 
+    errorWrapper: {
+        flexDirection: 'row', 
+        alignItems: 'center',
+        gap: 5
+    },
+    errorText: {
+        color: CustomColors.danger,
+    },
 })

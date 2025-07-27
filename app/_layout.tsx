@@ -87,7 +87,7 @@ return (
               ),
               headerTitle: () => (
                 <View style={{ flex: 1, marginLeft: 10, flexDirection: 'row' }}>
-                  <ThemedText style={{ fontSize: 19, fontFamily: 'popins-semibold' }}>
+                  <ThemedText type='headerTitle'>
                     Terms and Condition
                   </ThemedText>
                 </View>

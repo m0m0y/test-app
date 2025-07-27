@@ -1,13 +1,14 @@
 import React, { useRef, useEffect, useState, } from 'react';
-import { StyleSheet, TextInput, View, NativeSyntheticEvent, TextInputKeyPressEventData, Keyboard } from 'react-native';
+import { StyleSheet, TextInput, NativeSyntheticEvent, TextInputKeyPressEventData, Keyboard } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
-import { CustomColors } from "@/constants/ColorScheme";
+import { ColorsWithOpacity, CustomColors } from "@/constants/ColorScheme";
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { BottomSheetModal, BottomSheetView, } from '@gorhom/bottom-sheet';
 import { ButtonColors } from '@/constants/ButtonColors';
+import { ThemedInput } from '@/components/ThemedInput';
 
 import CustomButton from '@/components/ui/Button';
 
@@ -18,17 +19,29 @@ interface OTPModalProps {
     onComplete?: (otp: string) => void;
     onChangeText?: (otp: string) => void;
     resendOTP: () => void;
-    timer: string;
-    isDisabled: boolean;
+    OTPtimer: string;
+    isDisabled: boolean | undefined;
+    isVerified: boolean | undefined;
 }
 
-export default function OTPModal({ visibility, onClose, length=6, onComplete, onChangeText, resendOTP, timer, isDisabled}: OTPModalProps) {
+export default function OTPModal({ 
+    visibility, 
+    onClose, 
+    length=6, 
+    onComplete, 
+    onChangeText, 
+    resendOTP, 
+    OTPtimer, 
+    isDisabled, 
+    isVerified,
+}: OTPModalProps) {
     const colorScheme = useColorScheme();
-    const [otp, setOtp] = useState<string[]>(new Array(length).fill(''));
-    const [activeInput, setActiveInput] = useState<number>(0);
+    const [otp, setOtp] = useState(new Array(length).fill(''));
+    const [activeInput, setActiveInput] = useState(0);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    
     const inputRefs = useRef<(TextInput | null)[]>([]);
     const bottomSheetRef = useRef<BottomSheetModal>(null);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     // Trigger the bottom sheet modal using visibility props
     useEffect(() => {
@@ -63,7 +76,7 @@ export default function OTPModal({ visibility, onClose, length=6, onComplete, on
         };
     }, []);
 
-    const handleChange = (text: string, index: number): void => {
+    const handleChange = (text: string, index: number) => {
         const newOtp = [...otp];
         newOtp[index] = text;
         setOtp(newOtp);
@@ -88,7 +101,7 @@ export default function OTPModal({ visibility, onClose, length=6, onComplete, on
     const handleKeyPress = (
         e: NativeSyntheticEvent<TextInputKeyPressEventData>, 
         index: number
-    ): void => {
+    ) => {
         if (e.nativeEvent.key === 'Backspace') {
             // If current field has content, let onChangeText handle the deletion
             if (otp[index]) {
@@ -102,7 +115,7 @@ export default function OTPModal({ visibility, onClose, length=6, onComplete, on
                 setOtp(newOtp);
                 inputRefs.current[index - 1]?.focus();
                 setActiveInput(index - 1);
-                
+
                 if (onChangeText) {
                     onChangeText(newOtp.join(''));
                 }
@@ -110,20 +123,59 @@ export default function OTPModal({ visibility, onClose, length=6, onComplete, on
         }
     };
 
-    const handleFocus = (index: number): void => {
+    const handleFocus = (index: number) => {
         setActiveInput(index);
     };
+
+    // Clear fields of the OTP
+    const resetOTP = () => {
+        const newOtp = new Array(length).fill('');
+        setOtp(newOtp);
+        setActiveInput(0);
+
+        // Focus sa first input after reset
+        setTimeout(() => {
+            inputRefs.current[0]?.focus();
+        }, 100);
+
+        // Call onChangeText callback with empty string
+        if (onChangeText) {
+            onChangeText('');
+        }
+    }
+
+    // Handle resend OTP button press
+    const handleResetOTP = () => {
+        resetOTP();
+        resendOTP();
+    }
+
+    // Dynamic title for button
+    const verificationButtonTitle = (isDisabled: boolean | undefined) => {
+        if (isDisabled === false) return 'Resend ' + OTPtimer;
+        if (isDisabled === true) return 'Verified';
+        return 'Resend OTP';
+    }
+
+    // Dynamic input field style
+    const verificationInputStyle = () => {
+        if (isVerified === false) return styles.errorInput;
+        if (isVerified === true) return styles.successInput;
+        return null;
+    }
 
     return (
         <BottomSheetModal
             ref={bottomSheetRef}
             snapPoints={['50%']} 
             backgroundStyle={{ 
-                backgroundColor: colorScheme === 'dark' ? Colors.dark.background : Colors.light.background, 
+                backgroundColor: colorScheme === 'dark' ? 
+                Colors.dark.background : 
+                Colors.light.background, 
             }}
             onDismiss={onClose}
             backdropComponent={({ style }) => (
-                <View style={[style, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]} />
+                <ThemedView style={[style, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]} />
             )}
             enablePanDownToClose={true}
             enableDismissOnClose={true}
@@ -137,33 +189,29 @@ export default function OTPModal({ visibility, onClose, length=6, onComplete, on
                         name="mail-open" 
                         size={100} 
                         color={CustomColors.primary}
-                        style={{
-                            textAlign: 'center',
-                            alignSelf: 'center',
-                            marginBottom: 15,
-                            paddingBottom: 8,
-                            borderBottomWidth: 1,
-                            width: '89%',
-                            borderColor: '#6c757d2a',
-                        }}
+                        style={styles.icon}
                     />
                    
-                    <ThemedText type="subtitle" style={{ textAlign: 'center', }} >
-                        Verify Account
-                    </ThemedText>
+                   <ThemedView style={styles.textContainer}>
+                        <ThemedText type="subtitle">
+                            Verify Account
+                        </ThemedText>
 
-                    <ThemedText type="description" style={{ textAlign:'center' }} >
-                        Please enter verification code we sent to your email.
-                    </ThemedText>
+                        <ThemedText type="description">
+                            Please enter verification code we sent to your email.
+                        </ThemedText>
+                   </ThemedView>
+                  
 
-                    <View style={styles.otpContainer}>
+                    <ThemedView style={styles.otpContainer}>
                         {otp.map((digit, index) => (
                             <TextInput
                                 key={index}
                                 ref={(ref) => (inputRefs.current[index] = ref)}
                                 style={[
-                                    styles.otpInput,
+                                    styles.defaultInput,
                                     activeInput === index && styles.activeInput,
+                                    verificationInputStyle()
                                 ]}
                                 value={digit}
                                 onChangeText={(text: string) => handleChange(text, index)}
@@ -175,22 +223,24 @@ export default function OTPModal({ visibility, onClose, length=6, onComplete, on
                                 selectTextOnFocus
                                 autoComplete="sms-otp"
                                 textContentType="oneTimeCode"
+                                editable={isVerified === true ? false : true}
                             />
                         ))}
-                    </View>
+                    </ThemedView>
                 </ThemedView>
 
                 <ThemedView style={styles.buttonContainer}>
-                     <CustomButton
-                        title={isDisabled ? 'Resend ' + timer : 'Resend OTP'}
-                        onPress={resendOTP}
+                    <CustomButton
+                        title={verificationButtonTitle(isDisabled)}
+                        onPress={handleResetOTP}
                         buttonStyle={[
                             styles.button, 
-                            isDisabled ? styles.buttonDisabled : {}
+                            isDisabled === false && styles.buttonDisabled,
+                            isDisabled === true && styles.buttonSuccess,
                         ]}
                         textStyle={styles.buttonText}
                         otherProps={{
-                            disabled: isDisabled
+                            disabled: isDisabled === false || isDisabled === true
                         }}
                     />
                 </ThemedView>
@@ -208,26 +258,50 @@ const styles = StyleSheet.create({
         paddingBottom: 0,
     },
 
+    icon: {
+        textAlign: 'center',
+        alignSelf: 'center',
+        marginBottom: 15,
+        paddingBottom: 8,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        width: '89%',
+        borderColor: CustomColors.secondary,
+    },
+
+    textContainer: {
+        // flex: 1,
+        alignItems: 'center',
+        paddingVertical: 5,
+    },
+
     otpContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: 25,
     },
-    otpInput: {
+    defaultInput: {
         width: 50,
         height: 55,
         borderWidth: 2,
-        borderColor: '#ddd',
         borderRadius: 8,
         textAlign: 'center',
         fontSize: 18,
         fontFamily: 'popins-semibold',
-        backgroundColor: '#6c757d2a',
         marginHorizontal: 5,
+        borderColor: ColorsWithOpacity(CustomColors.secondary, 2),
+        backgroundColor: ColorsWithOpacity(CustomColors.secondary, 0.2),
     },
     activeInput: {
-        borderColor: '#007AFF',
-        backgroundColor: '#fff',
+        borderColor: CustomColors.primary,
+        backgroundColor: CustomColors.white,
+    },
+    errorInput: {
+        borderColor: ColorsWithOpacity(CustomColors.danger, 1),
+        backgroundColor: ColorsWithOpacity(CustomColors.danger, 0.2),
+    },
+    successInput: {
+        borderColor: ColorsWithOpacity(CustomColors.success, 1),
+        backgroundColor: ColorsWithOpacity(CustomColors.success, 0.2),
     },
 
     buttonContainer: {
@@ -242,6 +316,11 @@ const styles = StyleSheet.create({
         backgroundColor: ButtonColors.secondary.background, 
         borderColor: ButtonColors.secondary.border, 
         borderWidth: ButtonColors.secondary.borderWidth,
+    },
+    buttonSuccess: {
+        backgroundColor: ButtonColors.success.background, 
+        borderColor: ButtonColors.success.border, 
+        borderWidth: ButtonColors.success.borderWidth,
     },
     buttonText: {
         height: 24,

@@ -1,45 +1,88 @@
-import React, { useCallback, useState, useEffect } from "react";
-import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, ScrollView, Pressable, Alert, } from 'react-native';
-import { CustomColors, ColorsWithOpacity } from '@/constants/ColorScheme';
-import { useLocationStore } from "@/store/useLocationStore";
-import { useFocusEffect } from "expo-router";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "../ThemedView";
-import { Ionicons } from "@expo/vector-icons";
-import { PasswordRequired } from "@/constants/PasswordRequirements";
+import React, { useCallback, useState, useEffect } from 'react';
+import { StyleSheet, Keyboard, StatusBar, Text } from 'react-native';
+import { ColorsWithOpacity, CustomColors } from '@/constants/ColorScheme';
+import { useLocationStore } from '@/store/useLocationStore';
+import { useFocusEffect } from 'expo-router';
+import { ThemedView } from '../ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+import { Ionicons } from '@expo/vector-icons';
+import { PasswordRequired } from '@/constants/PasswordRequirements';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
+import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 import * as FileSystem from 'expo-file-system';
-import OTPModal from "@/app/(auth)/otp-modal";
-import CustomButton from "@/components/ui/Button";
-import InputField from "@/components/ui/InputField";
-import Dropdown from "@/components/ui/Dropdown";
-import InputGroup from "@/components/ui/InputGroup";
-import InputDateGroup from "@/components/ui/InputDateGroup";
-import TimeFormat from "@/constants/TimeFormat";
-import FileUpload from "@/components/ui/FileUpload";
+import * as DocumentPicker from 'expo-document-picker';
 
-interface SelectedFile {
-  uri: string;
-  name: string;
-  size: number;
-  mimeType: string;
-}
+import OTPModal from '@/app/(auth)/otp-modal';
+import CustomButton from '@/components/ui/Button';
+import InputField from '@/components/ui/InputField';
+import Dropdown from '@/components/ui/Dropdown';
+import InputGroup from '@/components/ui/InputGroup';
+import InputDateGroup from '@/components/ui/InputDateGroup';
+import TimeFormat from '@/constants/TimeFormat';
+import FileUpload from '@/components/ui/FileUpload';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AlertModal from '@/components/ui/AlertModal';
+
+// interface SelectedFileProps {
+//   uri: string;
+//   name: string;
+//   size: number;
+//   mimeType: string;
+// }
 
 export default function AccountDetails() {
-    const { currentStep, nextStep, prevStep } = useRegistrationStore();
-    const [dropDownModal, setDropDownModal] = useState<
+    const { 
+        currentStep,
+        accountDetails,
+
+        validationMessages,
+        validModal,
+        closeValidModal,
+
+        isEmailVerified, // 2 set of value (false, true)
+        isUsernameVerified, // 2 set of value (false, true)
+        isOTPVerified, // 3 set of value (undenfined, false, true)
+       
+        otpModal,
+        timeLeft,
+
+        disabledEmail,
+        disabledUsername,
+
+        recentlyVerified,
+
+        nextStep,
+        prevStep,
+        goToStep,
+        setLocationValues,
+        setAccountDetails,
+
+        handleUpdateEmail,
+        handleUpdateUsername,
+
+        clearValidationMessage, 
+
+        handleValidateEmail,
+        handleValidateUsername,
+        validateOTP,
+
+        resendOTP,
+        closeOtpModal,
+    } = useRegistrationStore();
+
+    const [locationDropdown, setLocationDropdown] = useState<
         'island' | 'region' | 'province' | 'municipality' | 'barangay' | undefined
     >(undefined); // Centralize state for modal visibility
     const resetLocationData = useLocationStore((state) => state.resetLocationData);
     const [items, setItems] = useState(PasswordRequired);
-    const [otpModal, setOtpModal] = useState(false);
-    const [timeLeft, setTimeLeft] = useState<number>(0);
-    const [isActiveVerify, setIsActiveVerify] = useState<boolean>(false);
-
-    const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [verifiedType, setVerifiedType] = useState<'email' | 'username' | null>(null);
 
+    // console.log(recentlyVerified);
+    // console.log(isOTPVerified);
+    
     const { 
         islands, 
         regions, 
@@ -47,8 +90,8 @@ export default function AccountDetails() {
         municipality,
         barangay,
 
-        selectedIsland, 
-        selectedRegion, 
+        selectedIsland,
+        selectedRegion,
         selectedProvince,
         selectedMunicipality,
         selectedBarangay,
@@ -63,103 +106,84 @@ export default function AccountDetails() {
     useFocusEffect(
         useCallback(() => {
             resetLocationData();
+            closeOtpModal();
         }, [])
     );
 
-    const [formData, setFormData] = useState({
-        email: '',
-        username: '',
-        password: '',
-        birthday: '',
-        age: '',
-        confirmPass: '',
-    });
-
-    const handleChange = (name: string, value: string | Date ) => {
-        setFormData({ ...formData, [name]: value });
-    }
-
-    const handleBirthDateChange = useCallback((birthday: Date, age: string) => {
-        const dateString = birthday.toISOString().split('T')[0];
-
-        setFormData(prev => ({
-            ...prev,
-            birthday: dateString,
-            age: age
-        }));
-    }, []);
-
-    const validateEmail = (val: any) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailRegex.test(val)) {
-            alert('Please enter a valid email');
-            return false;
-        }
-        return true;
-    }
-
+    // Set value of locations
     useEffect(() => {
-        let interval = null;
+        setLocationValues({
+            island: selectedIsland || '',
+            region: selectedRegion || '',
+            province: selectedProvince || '',
+            municipality: selectedMunicipality || '',
+            barangay: selectedBarangay || ''
+        });
+    }, [
+        selectedIsland, 
+        selectedRegion, 
+        selectedProvince, 
+        selectedMunicipality, 
+        selectedBarangay
+    ]);
 
-        if (isActiveVerify && timeLeft > 0) {
-            interval = setInterval(() => {
-                setTimeLeft(timeLeft => timeLeft - 1);
-            }, 1000);
-        } else if (timeLeft === 0) {
-            setIsActiveVerify(false);
+    // Initial state value para sa birthdate at age
+    useEffect(() => {
+        if (!accountDetails.birthday) {
+            const defaultDate = new Date(1990, 0, 1);
+            const defaultAge = calculateAge(defaultDate);
+
+            setAccountDetails('birthday', defaultDate.toISOString().split('T')[0]);
+            setAccountDetails('age', defaultAge.toString());
         }
+    }, [accountDetails.birthday]);
 
-        return () => {
-            if (interval) clearInterval(interval);
-        };
-    }, [isActiveVerify, timeLeft]);
-
-    const isDisabled: boolean = isActiveVerify && timeLeft > 0;
-
-    const handleSendOtp = async () => {
-        // Call validate email function
-        Keyboard.dismiss();
-        if (!validateEmail(formData.email)) { 
-            return;
+    // Calculate age function
+    const calculateAge = (val: Date): number => {
+        const today = new Date();
+        const birth = new Date(val);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
         }
+        
+        return age;
+    };
 
-        // Sending OTP
-        try {
-            alert('OTP sent!');
-            setOtpModal(true);
+    // const [formData, setFormData] = useState({
+    //     email: '',
+    //     username: '',
+    //     password: '',
+    //     birthday: new Date(1990, 0, 1),
+    //     age: '',
+    //     confirmPass: '',
+    //     file: null,
+    // });
 
-            // Start the timer (15 seconds)
-            setTimeLeft(15);
-            setIsActiveVerify(true);
-        } catch {
-            console.error('Failed to send OTP');
+    // const handleChange = (name: string, value: string | Date ) => {
+        // setFormData({ ...formData, [name]: value });
+    // }
+
+    const handleChange = (field: keyof typeof accountDetails, value: string) => {
+        setAccountDetails(field, value);
+        if (validationMessages[field as keyof typeof validationMessages]) {
+            clearValidationMessage(field);
         }
     }
 
-    const handleResendOTP = async () => {
-        // Re-send OTP
-        try {
-            alert('Sending OTP!');
-            // Start the timer (15 seconds)
-            setTimeLeft(15);
-            setIsActiveVerify(true);
-        } catch {
-            console.error('Failed to send OTP');
-        }
+    const handleBirthdateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        const currentDate = selectedDate || new Date(accountDetails.birthday || '');
+        const currentAge = calculateAge(currentDate).toString();
+
+        handleChange('birthday', currentDate.toISOString().split('T')[0]);
+        handleChange('age', currentAge);
+        setShowDatePicker(false);
     }
 
     const handleOTPComplete = (otpValue: string) => {
-        alert(`Entered OTP: ${otpValue}`);
-        console.log('OTP:', otpValue);
-    }
-
-    const handleCheckUsername = async () => {
-        try {
-            alert('Checking Username...');
-        } catch {
-            console.error('Failed to check username');
-        }
+        validateOTP(otpValue);
     }
 
     const validatePassword = (text: string) => {
@@ -219,7 +243,7 @@ export default function AccountDetails() {
     //     }
     // };
 
-    // const handlerNextButton = () => {
+    // const handleNextButton = () => {
     //     // console.log(formData.birthday);
     //     // console.log(formData.age);
     //     // console.log(selectedFile);
@@ -233,113 +257,228 @@ export default function AccountDetails() {
     //     nextStep();
     // }
 
-    const handlerNextButton = () => {
+    const handlePickDocument = async () => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: 'application/pdf', // Allow all file types
+                copyToCacheDirectory: true,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const file = result.assets[0];
+                // setSelectedFile({
+                //     uri: file.uri,
+                //     name: file.name,
+                //     size: file.size || 0,
+                //     mimeType: file.mimeType || 'application/octet-stream',
+                // });
+                handleChange('file', file.name);
+            }
+        } catch(error) {
+            console.error('Error picking document:', error);
+            // Alert.alert('Error', 'Failed to pick document');
+        }
+    }
+
+    const handleNextButton = () => {
         nextStep();
     }
 
     const handlerPrevButton = () => {
-        prevStep();
+        // prevStep();
     }
 
+    // Conditional approach for the content of Alert Modal
+    const renderMessageStatus = () => {
+        if (recentlyVerified === 'email') {
+            return (
+                <>
+                    <ThemedText 
+                        type='defaultSemiBold'
+                        style={styles.alertMessageTitle}
+                    >
+                        Email Verified Successfully!
+                    </ThemedText>
+
+                    <ThemedText 
+                        type='description'
+                        style={styles.alertMessage}
+                    >
+                        Your email address has been successfully verified.
+                    </ThemedText>
+                </>
+            );
+        } else if (recentlyVerified === 'username') {
+              return (
+                <>
+                    <ThemedText 
+                        type='description'
+                        style={styles.alertMessage}
+                    >
+                        Username successfully verified!.
+                    </ThemedText>
+                </>
+            );
+        }
+
+        return null;
+    }
+    
     return (
         <>
-            <View style={styles.formContainer}>
-
+            <ThemedView style={styles.formContainer}>
                 <Dropdown 
                     textLabel='Island'
                     data={islands}
-                    visibility={dropDownModal === 'island'}
+                    visibility={locationDropdown === 'island'}
                     dropdownModalOpen={() => {
-                        setDropDownModal('island');
+                        setLocationDropdown('island');
                         Keyboard.dismiss();
                     }}
-                    dropdownModalClose={() => setDropDownModal(undefined)}
+                    dropdownModalClose={() => setLocationDropdown(undefined)}
                     setSelectedValue={setSelectedIsland}
                     selectedValue={selectedIsland}
+                    errorMesage={validationMessages.island}
                 />
 
                 <Dropdown 
                     textLabel='Region'
                     data={regions}
-                    visibility={dropDownModal === 'region'}
+                    visibility={locationDropdown === 'region'}
                     dropdownModalOpen={() => {
-                        setDropDownModal('region');
+                        setLocationDropdown('region');
                         Keyboard.dismiss();
                     }}
-                    dropdownModalClose={() => setDropDownModal(undefined)}
+                    dropdownModalClose={() => setLocationDropdown(undefined)}
                     setSelectedValue={setSelectedRegion}
                     selectedValue={selectedRegion}
+                    errorMesage={validationMessages.region}
                 />
 
                 <Dropdown 
                     textLabel='Province'
                     data={province}
-                    visibility={dropDownModal === 'province'}
+                    visibility={locationDropdown === 'province'}
                     dropdownModalOpen={() => {
-                        setDropDownModal('province');
+                        setLocationDropdown('province');
                         Keyboard.dismiss();
                     }}
-                    dropdownModalClose={() => setDropDownModal(undefined)}
+                    dropdownModalClose={() => setLocationDropdown(undefined)}
                     setSelectedValue={setSelectedProvince}
                     selectedValue={selectedProvince}
+                    errorMesage={validationMessages.province}
+
                 />
 
                 <Dropdown 
                     textLabel='Municipality'
                     data={municipality}
-                    visibility={dropDownModal === 'municipality'}
+                    visibility={locationDropdown === 'municipality'}
                     dropdownModalOpen={() => {
-                        setDropDownModal('municipality');
+                        setLocationDropdown('municipality');
                         Keyboard.dismiss();
                     }}
-                    dropdownModalClose={() => setDropDownModal(undefined)}
+                    dropdownModalClose={() => setLocationDropdown(undefined)}
                     setSelectedValue={setSelectedMunicipality}
                     selectedValue={selectedMunicipality}
+                    errorMesage={validationMessages.municipality}
                 />
 
                 <Dropdown 
                     textLabel='Barangay'
                     data={barangay}
-                    visibility={dropDownModal === 'barangay'}
+                    visibility={locationDropdown === 'barangay'}
                     dropdownModalOpen={() => {
-                        setDropDownModal('barangay')
+                        setLocationDropdown('barangay')
                         Keyboard.dismiss();
                     }}
-                    dropdownModalClose={() => setDropDownModal(undefined)}
+                    dropdownModalClose={() => setLocationDropdown(undefined)}
                     setSelectedValue={setSelectedBarangay}
                     selectedValue={selectedBarangay}
+                    errorMesage={validationMessages.barangay}
                 />
 
                 <InputDateGroup 
                     textLabel='Date of birth'
-                    onBirthdayChange={handleBirthDateChange}
-                    initialDate={new Date(1990, 0, 1)}
+                    birthdate={accountDetails.birthday}
+                    calculateAge={calculateAge}
+                    showDatePicker={showDatePicker}
+                    setShowDatePicker={() => setShowDatePicker(true)}
+                    handleDateChange={handleBirthdateChange}
+                    errorMessage={validationMessages.birthday}
                 />
 
                 <InputGroup 
                     textLabel='Email'
-                    buttonLabel='Verify'
-                    textValue={formData.email}
-                    onChangeText={(text: string) => handleChange('email', text)}
-                    onButtonClick={handleSendOtp}
                     inputConfig={{
                         keyboardType: 'email-address',
+                        value: accountDetails.email,
+                        onChangeText: (text) => handleChange('email', text),
                         placeholder: 'Enter Email',
+                        editable: disabledEmail === true ? false : true,
                     }}
-                    isDisabledBtn={isDisabled}
+                    buttonLabel={
+                        // Dynamically changing the button label
+                        isOTPVerified === true 
+                        ? 'Update' 
+                        : 'Verify'
+                    }
+                    onButtonClick={() => {
+                        // Check if the accountDetails.email is available before passing to handleValidationEmail
+                        if (accountDetails.email) {
+                            {
+                                // Conditional approach for button update and verify
+                                disabledEmail === true
+                                ? handleUpdateEmail() 
+                                : handleValidateEmail(accountDetails.email)
+                            }
+                        }
+                    }}
+                    isDisabled={disabledEmail}
                     OTPtimer={TimeFormat(timeLeft)}
+                    errorMessage={validationMessages.email}
+                    // Display verify message if true
+                    verifyMessage={
+                        isOTPVerified === true 
+                        ? 'Email Verified' 
+                        : undefined
+                    } 
                 />
 
                 <InputGroup 
                     textLabel='Username'
-                    buttonLabel='Check'
-                    textValue={formData.username}
-                    onChangeText={(text: string) => handleChange('username', text)}
-                    onButtonClick={handleCheckUsername}
                     inputConfig={{
                         keyboardType: 'default',
+                        value: accountDetails.username,
+                        onChangeText: (text) => handleChange('username', text),
+                        autoCapitalize: 'none',
                         placeholder: 'Type your username',
+                        editable: disabledUsername === true ? false : true,
                     }}
+                    buttonLabel={
+                        // Dynamically changing the button label
+                        isUsernameVerified === true 
+                        ? 'Update' 
+                        : 'Check'
+                    }
+                    onButtonClick={() => {
+                        // Check if the accountDetails.username is available before passing to handleValidateUsername
+                        if (accountDetails.username) {
+                            {
+                                // Conditional approach for button update and verify
+                                disabledUsername === true 
+                                ? handleUpdateUsername()
+                                : handleValidateUsername(accountDetails.username)
+                            }
+                        }
+                    }}
+                    isDisabled={disabledUsername}
+                    errorMessage={validationMessages.username}
+                    verifyMessage={
+                        isUsernameVerified === true 
+                        ? 'Username verified' 
+                        : undefined
+                    } // Display verify message if true
                 />
 
                 <InputField 
@@ -347,64 +486,63 @@ export default function AccountDetails() {
                     inputConfig={{
                         keyboardType: 'default',
                         secureTextEntry: true,
-                        value: formData.password,
+                        value: accountDetails.password,
                         onChangeText: validatePassword,
                         autoCapitalize: 'none',
                         placeholder: 'Enter Password',
-                        style: [
-                            styles.textInput,
-                        ]
                     }}
+                    errorMesage={validationMessages.password}
                 />
 
-                <View style={styles.passwordWarningContainer}>
+                <ThemedView style={styles.passwordWarningContainer}>
                     <ThemedText style={styles.passwordTextWarning}>
                         Your password must contain:
                     </ThemedText>
 
                     {items.map((item) => (
-                        <View key={item.id} style={styles.checkListContainer}>
-                        <Ionicons
-                            name='checkmark-circle'
-                            size={20} 
-                            color={
-                                item.checked ? CustomColors.success : CustomColors.secondary
-                            }
-                        />
-                        <ThemedText style={styles.checkList}>
-                            {item.text}
-                        </ThemedText>
-                        </View>
+                        <ThemedView key={item.id} style={styles.checkListContainer}>
+                            <Ionicons
+                                name='checkmark-circle'
+                                size={20} 
+                                color={
+                                    item.checked ? CustomColors.success : CustomColors.secondary
+                                }
+                            />
+                            <ThemedText style={styles.checkList}>
+                                {item.text}
+                            </ThemedText>
+                        </ThemedView>
                     ))}
-                </View>
+                </ThemedView>
 
                 <InputField 
                     textLabel='Confirm Password'
                     inputConfig={{
                         keyboardType: 'default',
                         secureTextEntry: true,
-                        value: formData.confirmPass,
+                        value: accountDetails.confirmPass,
                         onChangeText: (text) => handleChange('confirmPass', text),
                         autoCapitalize: 'none',
                         placeholder: 'Confirm Password',
-                        style: [
-                            styles.textInput,
-                        ]
                     }}
+                    errorMesage={validationMessages.confirmPass}
                 />
 
                 <FileUpload 
-                    // onUploadComplete={handlerNextButton}
+                    // onUploadComplete={handleNextButton}
                     // uploadUrl={formData.file}
-                    selectedFile={selectedFile}
-                    setSelectedFile={setSelectedFile}
+                    // setSelectedFile={setSelectedFile}
+                    selectedFile={accountDetails.file!}
+                    onPressPickDocument={handlePickDocument}
+                    onPressRemoveFile={() => handleChange('file', '')}
+                    errorMesage={validationMessages.file}
                 />
-            </View>
+            </ThemedView>
 
-            <View style={styles.buttonContainer}>
+            <ThemedView style={styles.buttonContainer}>
                 <CustomButton 
                     title='Next'
-                    onPress={handlerNextButton}
+                    onPress={handleNextButton}
                     type='primary'
                 />
 
@@ -424,17 +562,47 @@ export default function AccountDetails() {
                         type='outlineSecondary'
                     />
                 }
-            </View>
+            </ThemedView>
 
+            {/* OTP MODAL */}
             {otpModal && (
                 <OTPModal 
                     visibility={otpModal}
-                    onClose={() => setOtpModal(false)}
+                    onClose={closeOtpModal}
                     onComplete={handleOTPComplete}
                     onChangeText={(text) => handleChange('otp', text)}
-                    resendOTP={handleResendOTP}
-                    timer={TimeFormat(timeLeft)}
-                    isDisabled={isDisabled}
+                    resendOTP={resendOTP}
+                    OTPtimer={TimeFormat(timeLeft)}
+                    isDisabled={disabledEmail}
+                    isVerified={isOTPVerified}
+                />
+            )}
+
+            {/* ALERT MESSAGE MODAL */}
+            {validModal && (
+                <AlertModal
+                    visibility={validModal}
+                    changeStatusBar={true}
+                    content={
+                        <>
+                            <Ionicons 
+                                name="checkmark-done-sharp" 
+                                size={55} 
+                                style={styles.alertIcon}
+                                color={CustomColors.success}
+                            />
+                            
+                            {renderMessageStatus()}
+                        </>
+                    }
+                    buttons={[
+                    { 
+                        buttonTitle: 'Continue', 
+                        buttonStyle: {borderRadius: 5},
+                        buttonOnpress: closeValidModal, 
+                    },
+                    ]}
+                    handleRequestClose={closeValidModal}
                 />
             )}
         </>
@@ -451,14 +619,6 @@ const styles = StyleSheet.create({
         // borderWidth: 2,
         marginHorizontal: 22,
         marginTop: 15,
-    },
-    textInput: {
-        borderRadius: 100,
-        borderWidth: 1,
-        paddingHorizontal: 14,
-        paddingVertical: 10,
-        fontFamily: 'popins-regular',
-        fontSize: 14,
     },
 
     passwordWarningContainer: {
@@ -482,5 +642,17 @@ const styles = StyleSheet.create({
     buttonContainer: {
         marginVertical: 13,
         marginHorizontal: 24,
+    },
+
+    alertIcon: {
+        marginBottom: 9,
+        textAlign: 'center',
+    },
+    alertMessageTitle: {
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    alertMessage: {
+        textAlign: 'center',
     }
 });

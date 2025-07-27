@@ -6,6 +6,7 @@ const api = axios.create({
   baseURL: 'http://10.0.2.2:8000/api',
   timeout: 10000, // 10 seconds timeout
   headers: {
+    "Accept": "application/json",
     "Content-Type": "application/json",
   },
 });
@@ -32,22 +33,34 @@ api.interceptors.response.use(
     return response; // If the request was successful, just return the response.
   },
   async (error) => {
+    // Handle network errors
+    if (!error.response) {
+      console.log('API - Network Error: ', error.message);
+      return Promise.reject({
+        ...error,
+        message: 'Networ connection failed'
+      });
+    }
+
     // Handling 401 Unauthorized errors
     if (error.response.status === 401) {
       // Check if there's a token once the response on api triggered 401
       // const token = useAuthStore.getState().authToken?.accessToken;
       // console.log(token);
-  
+
       // Triggered the logout out
       const onLogout = useAuthStore.getState().onLogout;
       await onLogout();
 
       // It's automatically redirect because i got authentication check in index
-      
-      console.log('Intercenptors response ' + error.response.data.message); // display Unauthenticated message
-      return Promise.reject(error);  // Reject the error after logging out
+      // display Unauthenticated message
+      console.log('API - Intercenptors response ' + error.response.data.message);
     }
-    
+
+    if (error.response.status >= 500) {
+      console.log('API - Server Error: ', error.response.data.message);
+    }
+
     return Promise.reject(error);
   }
 )

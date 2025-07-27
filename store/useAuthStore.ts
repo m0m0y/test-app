@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { createJSONStorage , persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { AuthProps } from '@/models/auth';
 import { UserProps } from '@/models/user';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import api from '@/services/api';
 
 // const TOKEN_KEY = 'my-jwt';
 // const USER_KEY = 'userInfo';
@@ -28,31 +29,30 @@ export const useAuthStore = create<AuthStateProps>()(
       isLoading: false,
       hasHydrated: false,
       setHydrated: (value) => set({ hasHydrated: value }),
-      
+
       onLogin: async (email, password) => {
         set({ isLoading: true });
         try {
-          const result = await axios.post(`${baseURL}/login`, {
-            email,
-            password,
-          });
-
+          const result = await api.post('/login', { email, password });
           const token = result.data.access_token;
           const user_data = result.data.user_data as UserProps;
 
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           set({
             authToken: { accessToken: token, authenticated: true },
             userInfo: user_data,
           });
 
-          return result;
-        } catch(error: any) {
           return {
-            error: true,
-            message: error.response?.data?.message,
-            status: error.response.status
-          }
+            success: true,
+            data: result.data
+          }; 
+        } catch (error: any) {
+          const errorMessage = 'Login failed! Network connection failed!';
+          return {
+            success: false, // Changed from error: true to success: false
+            message: errorMessage,
+            status: error.response?.status
+          };
         } finally {
           set({ isLoading: false });
         }
@@ -60,31 +60,29 @@ export const useAuthStore = create<AuthStateProps>()(
 
       onLogout: async () => {
         set({ isLoading: true });
-        const token = get().authToken?.accessToken;
-        
-        try {
-          // Sends logout request to backend.
-          await axios.post(
-            `${baseURL}/logout`,
-            { 
-              headers: { Authorization: `Bearer ${token}` } 
-            }
-          );
-        } catch (error: any) {
-          return {
-            error: true,
-            message: error.response?.data?.message,
-            status: error.response.status
-          };
-        } finally {
-          // Clears the token from state and AsyncStorage.
-          axios.defaults.headers.common['Authorization'] = '';
+        // const token = get().authToken?.accessToken;
+
+        // Always do local cleanup first
+        const performLocalCleanup = () => {
+          delete axios.defaults.headers.common['Authorization'];
           set({
             authToken: { accessToken: null, authenticated: false },
             userInfo: null,
+            isLoading: false
           });
-          set({ isLoading: false });
+        };
+
+        try {
+          // Sends logout request to backend.
+          await api.post('/logout', {}, { timeout: 3000 });
+          console.log('Backend logout successful');
+        } catch (error: any) {
+          console.log('Backend logout failed (but continuing with local logout):', error.message);
         }
+
+        // Always perform local cleanup
+        performLocalCleanup();
+        return { success: true };
       },
 
       // Optional: force re-check token on app load (if needed)
@@ -103,12 +101,12 @@ export const useAuthStore = create<AuthStateProps>()(
       partialize: (state) => ({
         authToken: state.authToken,
         userInfo: state.userInfo,
-      }), 
+      }),
       // This will called after AsyncStorage finishes loading the saved data.
-      onRehydrateStorage: () => { 
+      onRehydrateStorage: () => {
         return (state) => {
           // console.log(state?.checkToken);
-          if (state?.authToken?.accessToken) { 
+          if (state?.authToken?.accessToken) {
             state?.setHydrated(true);
             console.log('Hydrated Message: User is authenticated!');
           } else {

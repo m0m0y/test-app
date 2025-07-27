@@ -23,9 +23,9 @@ export default function HomeScreen() {
     router.replace("/(auth)/signin");
     
     // Check if the onLogout catch an error
-    if(result.error) {
-      console.log('Logout message: ' + result.message);
-    }
+    // if(result.error) {
+    //   console.log('Logout message: ' + result.message);
+    // }
   };
 
   const handleMoreCourse = (val: any) => {

@@ -1,6 +1,6 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useHeaderHeight } from '@react-navigation/elements';
-import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, View, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
 import { ThemedView } from '@/components/ThemedView';
@@ -145,7 +145,6 @@ export default function ChangPassword() {
                   autoCapitalize: 'none',
                   placeholder: 'Enter your old password',
                   style: [
-                    styles.textInput,
                     errorStyle.oldPass && { borderColor: CustomColors.danger }
                   ]
                 }}
@@ -162,7 +161,6 @@ export default function ChangPassword() {
                   autoCapitalize: 'none',
                   placeholder: 'Your new password',
                   style: [
-                    styles.textInput,
                     errorStyle.oldPass && { borderColor: CustomColors.danger }
                   ]
                 }}
@@ -199,7 +197,6 @@ export default function ChangPassword() {
                   autoCapitalize: 'none',
                   placeholder: 'Please confirm your password',
                    style: [
-                    styles.textInput,
                     errorStyle.oldPass && { borderColor: CustomColors.danger }
                   ]
                 }}
@@ -282,15 +279,6 @@ const styles = StyleSheet.create({
     marginLeft: 8, 
     fontSize: 13, 
     fontFamily: 'popins-regular',
-  },
-
-  textInput: {
-    borderRadius: 100,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontFamily: 'popins-regular',
-    fontSize: 14,
   },
 
   buttonContainer: {

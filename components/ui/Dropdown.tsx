@@ -1,11 +1,14 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Modal, FlatList, StatusBar, Button } from 'react-native';
+import React, { useState, useRef, useEffect } from "react";
+import { StyleSheet, View, TouchableOpacity, } from 'react-native';
 import { CustomColors, ColorsWithOpacity } from '@/constants/ColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetFlatList, BottomSheetModal } from "@gorhom/bottom-sheet";
 import { ThemedText } from "../ThemedText";
+import { ThemedView } from "../ThemedView";
+
+import ErrorMessage from "../ErrorMessage";
 
 interface DropdownProps {
     textLabel: string;
@@ -16,9 +19,19 @@ interface DropdownProps {
     dropdownModalClose: () => void;
     setSelectedValue: (value: string) => void;
     selectedValue?: string; 
+    errorMesage?: string;
 }
 
-export default function Dropdown({ textLabel, data, visibility, dropdownModalOpen, dropdownModalClose, setSelectedValue, selectedValue }: DropdownProps) {
+export default function Dropdown({ 
+    textLabel, 
+    data, 
+    visibility, 
+    dropdownModalOpen, 
+    dropdownModalClose, 
+    setSelectedValue, 
+    selectedValue,
+    errorMesage 
+}: DropdownProps) {
     const colorScheme = useColorScheme();
     const [selectedOption, setSelectedOption] = useState('');
     const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -45,8 +58,8 @@ export default function Dropdown({ textLabel, data, visibility, dropdownModalOpe
     }
     
     return (
-        <View style={{ marginBottom: 19, }}>
-            <ThemedText style={styles.textLabel}>
+        <ThemedView style={styles.inputContainer}>
+            <ThemedText type='label'>
                 { textLabel }
             </ThemedText>
 
@@ -58,11 +71,11 @@ export default function Dropdown({ textLabel, data, visibility, dropdownModalOpe
                         Colors.dark.borderColor : 
                         Colors.light.borderColor, 
                     }
-                 ]}
+                ]}
                 onPress={dropdownModalOpen}
                 activeOpacity={1}
             >
-                <View style={styles.placeholderContainer}>
+                <ThemedView style={styles.placeholderContainer}>
                     {selectedOption ? 
                         <ThemedText type="small">
                             {selectedOption}
@@ -81,7 +94,7 @@ export default function Dropdown({ textLabel, data, visibility, dropdownModalOpe
                             Colors.light.text
                         }
                     />
-                </View>
+                </ThemedView>
             </TouchableOpacity>
 
             <BottomSheetModal
@@ -94,7 +107,7 @@ export default function Dropdown({ textLabel, data, visibility, dropdownModalOpe
                     <View style={[style, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]} />
                 )}
             >
-                <View style={styles.modalContainer}>
+                <ThemedView style={styles.modalContainer}>
                     <ThemedText style={styles.modalSubTitle}>
                         Choose { textLabel }
                     </ThemedText>
@@ -116,7 +129,7 @@ export default function Dropdown({ textLabel, data, visibility, dropdownModalOpe
                             <TouchableOpacity
                                 onPress={() => handleSelect(item)}
                             >
-                                <View 
+                                <ThemedView 
                                     style={[
                                         styles.itemWrapper,
                                         { backgroundColor: colorScheme === 'dark' ?
@@ -140,25 +153,25 @@ export default function Dropdown({ textLabel, data, visibility, dropdownModalOpe
                                     <ThemedText style={styles.itemText}>
                                         { item.label }
                                     </ThemedText>
-                                </View>
+                                </ThemedView>
                             </TouchableOpacity>
                         )}
                     />
-                </View>
+                </ThemedView>
             </BottomSheetModal>
-        </View>
+
+            {errorMesage && (
+                <ErrorMessage message={errorMesage} />
+            )}
+        </ThemedView>
     )
 }
 
 const styles = StyleSheet.create({
-    textLabel: { 
-        marginBottom: 4,
-        fontSize: 17, 
-        fontFamily: 'popins-semibold',
-    },
+    inputContainer: { marginVertical: 10 },
     dropdownField: { 
         borderRadius: 100,
-        borderWidth: 1,
+        borderWidth: 1.2,
         paddingHorizontal: 14,
         paddingVertical: 10,
     },

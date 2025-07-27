@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, Modal, StatusBar, Pressable, ViewStyle, TextStyle } from 'react-native';
+import React from 'react';
+import { StyleSheet, Modal, StatusBar, ViewStyle, TextStyle } from 'react-native';
 import { CustomColors, ColorsWithOpacity } from "@/constants/ColorScheme";
 import { ThemedView } from "@/components/ThemedView";
 import { ButtonColors } from '@/constants/ButtonColors';
@@ -18,7 +18,6 @@ interface ButtonConfigProps {
 interface MessageModalProps {
     visibility: boolean,
     messageAlertModal?: () => void;
-
     buttons: ButtonConfigProps[],
     changeStatusBar?: boolean, 
     content?: React.ReactNode,
@@ -38,46 +37,45 @@ export default function AlertModal(props: MessageModalProps) {
             // onRequestClose={messageAlertModal ? handleCloseModal : undefined}
             onRequestClose={props.handleRequestClose}
             onShow={() => {
-                    if(props.changeStatusBar) {
-                        StatusBar.setBackgroundColor(ColorsWithOpacity(CustomColors.dark, 0.50), true)
-                    }
+                if(props.changeStatusBar) {
+                    StatusBar.setBackgroundColor(ColorsWithOpacity(CustomColors.dark, 0.50), true)
                 }
-            }
+            }}
             // onDismiss={() => 
             //     // StatusBar.setBackgroundColor('rgba(253, 254, 255, 0)', true)
             //     console.log('asdasd')
             //     // StatusBar.setBackgroundColor(colorsWithOpacity(colors.light, 0), true)
             // }
         >
-            <View style={styles.overlay}>
-                <View style={styles.alertModalContainer}>
-                    <View style={styles.textContainer}>
+            <ThemedView style={styles.overlay}>
+                <ThemedView style={styles.alertModalContainer}>
+                    <ThemedView style={styles.textContainer}>
                         {/* {props.content ? 
                             <>{props.content}</> : 
                             null 
                         } */}
                         {props.content}
-                    </View>
+                    </ThemedView>
 
                     {props.buttons.length > 0 && (
-                        <View style={styles.buttonContainer}>
+                        <ThemedView style={styles.buttonContainer}>
                             {props.buttons.map((button, index) => (
                                 <CustomButton
                                     key={index}
                                     title={button.buttonTitle}
                                     type={button.buttonType}
                                     onPress={button.buttonOnpress}
-                                    buttonStyle={styles.button}
+                                    buttonStyle={[styles.button, button.buttonStyle]}
                                     textStyle={[
                                         styles.buttonText, 
                                         button.buttonTextStyle
                                     ]}
                                 />
                             ))}
-                        </View>
+                        </ThemedView>
                     )}
-                </View>
-            </View>
+                </ThemedView>
+            </ThemedView>
         </Modal>
     )
 }
@@ -90,7 +88,6 @@ const styles = StyleSheet.create({
         backgroundColor: ColorsWithOpacity(CustomColors.dark, 0.50),
     },
     alertModalContainer: {
-        backgroundColor: CustomColors.white,
         width: '85%',
         borderRadius: 5,
         shadowColor: CustomColors.black,
@@ -100,7 +97,6 @@ const styles = StyleSheet.create({
     },
 
     textContainer: {
-        // backgroundColor: CustomColors.white, 
         padding: 24, 
         borderRadius: 10,
     },
@@ -111,14 +107,15 @@ const styles = StyleSheet.create({
         backgroundColor: ColorsWithOpacity(CustomColors.secondary, 0.1),
         borderTopWidth: StyleSheet.hairlineWidth, 
         borderTopColor: 'lightgray',
-        paddingTop: 13,
+        paddingTop: 10,
         gap: 5,
     },
     button: {
+        paddingHorizontal: 15, 
+        height: 45,
         // paddingTop: 10,
-        paddingHorizontal: 20, 
         // marginVertical: 4, 
-        width: '100%',
+        // width: '100%',
         // height: 40,
     },
     buttonText: {
